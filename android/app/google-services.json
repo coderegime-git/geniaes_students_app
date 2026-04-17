@@ -1,0 +1,90 @@
+{
+  "project_info": {
+    "project_number": "979921148562",
+    "project_id": "geniaes-57aca",
+    "storage_bucket": "geniaes-57aca.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:979921148562:android:8c31ef34ce9e6f38f1644b",
+        "android_client_info": {
+          "package_name": "com.geniaes.student"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "979921148562-od4fmpjr52b6ifsrrjelqcak4jnrafaf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.geniaes.student",
+            "certificate_hash": "c6434d05d7e6d4bddec7b01d76fc294da942f53a"
+          }
+        },
+        {
+          "client_id": "979921148562-mt3m78rck7tic1m3jtamvls4ie6lnbbk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEUbVsbeAln7yAMWIldexADKWgWGIEO5o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "979921148562-mt3m78rck7tic1m3jtamvls4ie6lnbbk.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "979921148562-5h1f269evclov2n8tkj0962po179s5uu.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.teacherhubForTutors"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:979921148562:android:3b6637a0c87df4c7f1644b",
+        "android_client_info": {
+          "package_name": "com.geniaes.teachers"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "979921148562-mt3m78rck7tic1m3jtamvls4ie6lnbbk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEUbVsbeAln7yAMWIldexADKWgWGIEO5o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "979921148562-mt3m78rck7tic1m3jtamvls4ie6lnbbk.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "979921148562-5h1f269evclov2n8tkj0962po179s5uu.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.teacherhubForTutors"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
