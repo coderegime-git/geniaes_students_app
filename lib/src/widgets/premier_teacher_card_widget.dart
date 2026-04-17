@@ -28,7 +28,7 @@ class PremierTeacherCardWidget extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: EdgeInsets.fromLTRB(8.w, 3.h, 8.w, 3.h),
-        margin: EdgeInsets.fromLTRB(8.w, 18.h, 8.w, 18.h),
+        margin: EdgeInsets.fromLTRB(8.w, 5.h, 8.w, 5.h), // was 18.h
         decoration: BoxDecoration(
           gradient: AppColors.gradientSix,
           boxShadow: [
@@ -49,7 +49,7 @@ class PremierTeacherCardWidget extends StatelessWidget {
                 padding: EdgeInsets.fromLTRB(8.w, 0, 2.w, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  // mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     SizedBox(
                       height: 10.h,
