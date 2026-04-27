@@ -18,36 +18,12 @@ class AppConfigs {
           .data!
           .agoraAppCertificate ??
       "";
-  static dynamic pusherBeamsInstanceId = Get.find<GetAllSettingsController>()
-          .getAllSettingsModel
-          .data!
-          .pusherBeamsInstanceId ??
-      "";
-  static dynamic pusherBeamsSecretKey = Get.find<GetAllSettingsController>()
-          .getAllSettingsModel
-          .data!
-          .pusherBeamsSecretKey ??
-      "";
-  static dynamic pusherAppId = Get.find<GetAllSettingsController>()
-          .getAllSettingsModel
-          .data!
-          .pusherAppId ??
-      "";
-  static dynamic pusherAppKey = Get.find<GetAllSettingsController>()
-          .getAllSettingsModel
-          .data!
-          .pusherAppKey ??
-      "";
-  static dynamic pusherAppSecret = Get.find<GetAllSettingsController>()
-          .getAllSettingsModel
-          .data!
-          .pusherAppSecret ??
-      "";
-  static dynamic pusherAppCluster = Get.find<GetAllSettingsController>()
-          .getAllSettingsModel
-          .data!
-          .pusherAppCluster ??
-      "";
+  static dynamic pusherBeamsInstanceId = "9466bd1b-2413-4135-badc-36ae30931bac";
+  static dynamic pusherBeamsSecretKey = "7DDCB27292D90F8C5477BDC0B55CC575D7F4BDC34E6A1CE3ACA66B7AB5703FF2";
+  static dynamic pusherAppId = "2147119";
+  static dynamic pusherAppKey = "bb996c4ee562d236d648";
+  static dynamic pusherAppSecret = "7b8eb3018fd3d46c7e3a";
+  static dynamic pusherAppCluster = "ap2";
   static dynamic stripeKey = Get.find<GetAllSettingsController>()
           .getAllSettingsModel
           .data!

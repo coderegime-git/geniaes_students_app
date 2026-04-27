@@ -9,6 +9,7 @@ import '../controllers/general_controller.dart';
 import '../controllers/make_payment_controller.dart';
 import '../models/book_appointment_model.dart';
 import '../models/book_service_model.dart';
+import '../routes.dart';
 import '../screens/webview_screen.dart';
 import '../widgets/button_widget.dart';
 import '../widgets/custom_dialog.dart';
@@ -16,13 +17,16 @@ import '../widgets/custom_dialog.dart';
 makePaymentRepo(
     BuildContext context, bool responseCheck, Map<String, dynamic> response) {
   if (responseCheck) {
+
     Get.find<MakePaymentController>().bookAppointmentModel =
         BookAppointmentModel.fromJson(response);
-    Get.to(WebViewScreen(
-      urlEndPoint:
-          "${Get.find<MakePaymentController>().bookAppointmentModel.data!.fundTransaction}?user_id=${Get.find<GeneralController>().storageBox.read('mainUserId')}",
-      fromScreen: "Appointment Screen",
-    ));
+    // Get.to(WebViewScreen(
+    //   urlEndPoint:
+    //       "${Get.find<MakePaymentController>().bookAppointmentModel.data!.fundTransaction}?user_id=${Get.find<GeneralController>().storageBox.read('mainUserId')}",
+    //   fromScreen: "Appointment Screen",
+    // ));
+    Get.offAndToNamed(PageRoutes.appointmentHistoryScreen);
+
     print(
         "${Get.find<MakePaymentController>().bookAppointmentModel.data!.fundTransaction}?user_id=${Get.find<GeneralController>().storageBox.read('mainUserId')} PAYMENTURL");
     Get.find<MakePaymentController>().update();

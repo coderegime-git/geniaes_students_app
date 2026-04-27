@@ -1074,7 +1074,8 @@ class TeacherModel {
     _name = json['name'];
     _firstName = json['first_name'];
     _lastName = json['last_name'];
-    _description = json['description'];
+    _description =
+        json['description'] is List ? null : json['description'] as String?;
     _descriptionTranslations = json['description_translations'] != null
         ? DescriptionTranslations.fromJson(json['description_translations'])
         : null;
@@ -1303,7 +1304,7 @@ class TeacherCategories {
   TeacherCategories.fromJson(dynamic json) {
     _id = json['id'];
     _name = json['name'];
-    _description = json['description'];
+    _description = json['description'] is List ? null : json['description'];
     _slug = json['slug'];
     _isActive = json['is_active'];
     _isFeatured = json['is_featured'];
@@ -1392,7 +1393,7 @@ class DescriptionTranslations {
   }
 
   DescriptionTranslations.fromJson(dynamic json) {
-    _en = json['en'];
+    _en = json['en'] is List ? null : json['en'];
   }
   String? _en;
   DescriptionTranslations copyWith({

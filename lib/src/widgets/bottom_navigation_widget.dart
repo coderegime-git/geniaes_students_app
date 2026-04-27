@@ -265,11 +265,10 @@ class _BottomNavigationWidgetState extends State<BottomNavigationWidget> {
                                           .storageBox
                                           .read('authToken') !=
                                       null &&
-                                  Get.find<GetAllSettingsController>()
-                                          .getAllSettingsModel
-                                          .data!
-                                          .enableWalletSystem ==
-                                      "1"
+                              (Get.find<GetAllSettingsController>()
+                                  .getAllSettingsModel
+                                  .data
+                                  ?.enableWalletSystem ?? "0") == "1"
                               ? ListTile(
                                   isThreeLine: false,
                                   dense: true,

@@ -75,6 +75,11 @@ class AllTeachersController extends GetxController {
     update();
   }
 
+  clearTeachersList() {
+    teacherListForPagination = [];
+    update();
+  }
+
   ///----app-bar-settings-----start
   ScrollController? scrollController;
   bool lastStatus = true;

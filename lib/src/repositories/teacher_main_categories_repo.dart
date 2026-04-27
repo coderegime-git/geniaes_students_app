@@ -6,6 +6,9 @@ import '../models/teacher_main_categories_model.dart';
 getTeacherMainCategoriesRepo(
     BuildContext context, bool responseCheck, Map<String, dynamic> response) {
   if (responseCheck) {
+    if (!Get.isRegistered<TeacherMainCategoriesController>()) {
+      Get.put(TeacherMainCategoriesController());
+    }
     Get.find<TeacherMainCategoriesController>().getTeacherMainCategoriesModel =
         GetTeacherMainCategoriesModel.fromJson(response);
 

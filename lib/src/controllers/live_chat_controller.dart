@@ -16,8 +16,10 @@ class LiveChatController extends GetxController {
   // final ScrollController messageScrollController = ScrollController();
   List<dynamic> messageList = [];
   updateMessageList(newValue) {
-    messageList.add(newValue);
-    update();
+    if (newValue != null) {
+      messageList.add(newValue);
+      update();
+    }
   }
 
   emptyMessageList() {
@@ -50,8 +52,8 @@ class LiveChatController extends GetxController {
   GetLiveChatMessagesDataModel? getLiveChatMessagesDataModel =
       GetLiveChatMessagesDataModel();
 
-  ScrollController? scrollController;
-  ScrollController? chatScrollController;
+  ScrollController scrollController = ScrollController();
+  ScrollController chatScrollController = ScrollController();
   bool lastStatus = true;
   double height = 100.h;
 

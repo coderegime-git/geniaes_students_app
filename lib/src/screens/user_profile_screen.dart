@@ -36,6 +36,67 @@ class UserProfileScreenState extends State<UserProfileScreen> {
   final GlobalKey<FormState> _userProfileUpdateFormKey = GlobalKey();
   final editUserProfileLogic = Get.put(EditUserProfileController());
   final generalLogic = Get.put(GeneralController());
+  bool isLoadingCountries = false;
+  String? _selectedCountry;
+  String? _selectedState;
+  String? _selectedCity;
+
+  Widget _buildDropdownField({
+    required String hint,
+    required String? value,
+    required List<String> items,
+    List<String>? displayLabels, // ADD THIS
+    required Function(String?) onChanged,
+    required String? Function(String?)? validator,
+  }) {
+    return Material(
+      elevation: 6.0,
+      borderRadius: BorderRadius.circular(30),
+      shadowColor: Colors.grey.withOpacity(0.4),
+      child: DropdownButtonFormField<String>(
+        value: (value == null || !items.contains(value)) ? null : value,
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: AppTextStyles.hintTextStyle1,
+          contentPadding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h),
+          isDense: true,
+          border: OutlineInputBorder(
+            borderSide:
+                const BorderSide(width: 1, color: AppColors.transparent),
+            borderRadius: BorderRadius.circular(30),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderSide:
+                const BorderSide(width: 1, color: AppColors.transparent),
+            borderRadius: BorderRadius.circular(30),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderSide:
+                const BorderSide(width: 1, color: AppColors.transparent),
+            borderRadius: BorderRadius.circular(30),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide:
+                const BorderSide(width: 1, color: AppColors.primaryColor),
+            borderRadius: BorderRadius.circular(30),
+          ),
+        ),
+        icon: const Icon(Icons.keyboard_arrow_down_rounded,
+            color: AppColors.primaryColor),
+        isExpanded: true,
+        style: AppTextStyles.hintTextStyle1,
+        items: items
+            .map((c) => DropdownMenuItem(
+                value: c,
+                child: Text(c,
+                    style: AppTextStyles.hintTextStyle1,
+                    overflow: TextOverflow.ellipsis)))
+            .toList(),
+        onChanged: onChanged,
+        validator: validator,
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -59,8 +120,15 @@ class UserProfileScreenState extends State<UserProfileScreen> {
     editUserProfileLogic.userProfileZipCodeController.text =
         generalLogic.currentUserModel!.loginInfo!.zipCode ?? '';
 
-    // editUserProfileLogic.uploadedProfileImage =
-    //     generalLogic.currentUserModel!.loginInfo!.image;
+    editUserProfileLogic.userProfileZipCodeController.text =
+        generalLogic.currentUserModel!.loginInfo!.zipCode ?? '';
+
+    // Initialize dropdowns with existing IDs
+    editUserProfileLogic.initializeDropdowns(
+      cId: int.tryParse(generalLogic.currentUserModel!.loginInfo!.countryId?.toString() ?? ''),
+      sId: int.tryParse(generalLogic.currentUserModel!.loginInfo!.stateId?.toString() ?? ''),
+      cityId: int.tryParse(generalLogic.currentUserModel!.loginInfo!.cityId?.toString() ?? ''),
+    );
 
     log("${generalLogic.currentUserModel!.loginInfo!.image} Log Image");
   }
@@ -352,7 +420,79 @@ class UserProfileScreenState extends State<UserProfileScreen> {
                               }
                             },
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 14),
+                          editUserProfileController.isLoadingCountries
+                              ? const CircularProgressIndicator()
+                              : _buildDropdownField(
+                                  hint: '* Country',
+                                  value: editUserProfileController
+                                      .userProfileSelectedCountry,
+                                  items: editUserProfileController.countryList
+                                      .map((c) => c.name)
+                                      .toList(),
+                                  onChanged: (value) {
+                                    if (value == null) return;
+                                    // find the selected country object to get its id
+                                    final selected = editUserProfileController
+                                        .countryList
+                                        .firstWhere((c) => c.name == value);
+                                    editUserProfileController
+                                        .selectedCountryId = selected.id;
+                                    editUserProfileController
+                                        .userProfileSelectedCountry = value;
+                                    editUserProfileController.fetchStates(selected.id);
+                                  },
+                                  validator: (value) =>
+                                      (value == null || value.isEmpty)
+                                          ? 'Country is required'
+                                          : null,
+                                ),
+                          const SizedBox(height: 14),
+                          editUserProfileController.isLoadingStates
+                              ? const CircularProgressIndicator()
+                              : _buildDropdownField(
+                            hint: '* State',
+                            value: editUserProfileController.userProfileSelectedState,
+                            items: editUserProfileController.stateList
+                                .map((s) => s.name)
+                                .toList(),
+                            onChanged: (value) {
+                              if (value == null) return;
+                              final selected = editUserProfileController.stateList
+                                  .firstWhere((s) => s.name == value);
+                              editUserProfileController.selectedStateId = selected.id;
+                              editUserProfileController.userProfileSelectedState = value;
+                              editUserProfileController.fetchCities(
+                                editUserProfileController.selectedCountryId!,
+                                selected.id,
+                              );
+                              editUserProfileController.update();
+                            },
+                            validator: (value) =>
+                            (value == null || value.isEmpty) ? 'State is required' : null,
+                          ),
+                          const SizedBox(height: 14),
+                          editUserProfileController.isLoadingCities
+                              ? const CircularProgressIndicator()
+                              : _buildDropdownField(
+                            hint: '* City',
+                            value: editUserProfileController.userProfileSelectedCity,
+                            items: editUserProfileController.cityList
+                                .map((c) => c.name)
+                                .toList(),
+                            onChanged: (value) {
+                              if (value == null) return;
+                              final selected = editUserProfileController.cityList
+                                  .firstWhere((c) => c.name == value);
+                              editUserProfileController.selectedCityId = selected.id;
+                              editUserProfileController.userProfileSelectedCity = value;
+                              editUserProfileController.update();
+                            },
+                            validator: (value) =>
+                            (value == null || value.isEmpty) ? 'City is required' : null,
+                          ),
+                          const SizedBox(height: 14),
+                          const SizedBox(height: 18),
                           ButtonWidgetOne(
                               onTap: () async {
                                 ///---keyboard-close
@@ -409,10 +549,16 @@ class UserProfileScreenState extends State<UserProfileScreen> {
                                           .userProfileDescriptionController
                                           .text,
                                       editUserProfileController
-                                          .userProfileZipCodeController.text,
-                                      editUserProfileController
                                           .userProfileAddressLine1Controller
                                           .text,
+                                      editUserProfileController
+                                          .userProfileZipCodeController.text,
+                                      editUserProfileController
+                                          .selectedCountryId?.toString(),
+                                      editUserProfileController
+                                          .selectedStateId?.toString(),
+                                      editUserProfileController
+                                          .selectedCityId?.toString(),
                                       editUserProfileController.profileImage,
                                     );
                                   } else if (generalLogic.currentUserModel!
@@ -461,6 +607,16 @@ class UserProfileScreenState extends State<UserProfileScreen> {
                                           "zip_code": editUserProfileController
                                               .userProfileZipCodeController
                                               .text,
+                                          "country_id":
+                                              editUserProfileController
+                                                  .selectedCountryId
+                                                  ?.toString(),
+                                          "state_id": editUserProfileController
+                                              .selectedStateId
+                                              ?.toString(),
+                                          "city_id": editUserProfileController
+                                              .selectedCityId
+                                              ?.toString(),
                                           // "image": generalLogic
                                           //     .currentUserModel!
                                           //     .loginInfo!
@@ -542,6 +698,7 @@ class UserProfileScreenState extends State<UserProfileScreen> {
                               buttonTextStyle: AppTextStyles.buttonTextStyle1,
                               borderRadius: 40,
                               buttonColor: AppColors.gradientOne),
+                          const SizedBox(height: 5),
                           Center(
                             child: SizedBox(
                               width: 140.w,

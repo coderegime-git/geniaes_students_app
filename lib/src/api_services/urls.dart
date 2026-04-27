@@ -25,6 +25,11 @@ String editUserProfileURL = '${apiBaseUrl}students/update_general_info';
 ///---consultant-profile-by-id
 String getTeacherProfileUrl = '${apiBaseUrl}teachers/';
 
+///--Profile-DropDowns
+String countryURL = '${apiBaseUrl}countries';
+String stateURL = '${apiBaseUrl}states?country_id=';
+String cityURL = '${apiBaseUrl}cities?country_id=';
+
 ///---featured
 String getFeaturedEvents = '${apiBaseUrl}featured_events';
 String getFeaturedTeachers = '${apiBaseUrl}featured_teachers';

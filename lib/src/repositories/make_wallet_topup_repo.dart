@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../api_services/urls.dart';
 import '../controllers/general_controller.dart';
 import '../controllers/make_payment_controller.dart';
 import '../models/wallet_topup_model.dart';
@@ -11,10 +12,12 @@ makeWalletTopupRepo(
   if (responseCheck) {
     Get.find<MakePaymentController>().walletTopupModel =
         WalletTopupModel.fromJson(response);
-    Get.to(WebViewScreen(
-      urlEndPoint:
-          "${Get.find<MakePaymentController>().walletTopupModel.data!.fundTransaction}?user_id=${Get.find<GeneralController>().storageBox.read('mainUserId')}",
-    ));
+    print("NAVIGATE TO BOOK APPOINTMENT");
+    Get.to(bookAppointmentUrl);
+    // Get.to(WebViewScreen(
+    //   urlEndPoint:
+    //       "${Get.find<MakePaymentController>().walletTopupModel.data!.fundTransaction}?user_id=${Get.find<GeneralController>().storageBox.read('mainUserId')}",
+    // ));
     print(
         "${Get.find<MakePaymentController>().walletTopupModel.data!.fundTransaction}?user_id=${Get.find<GeneralController>().storageBox.read('mainUserId')} PAYMENTURL");
     Get.find<MakePaymentController>().update();
