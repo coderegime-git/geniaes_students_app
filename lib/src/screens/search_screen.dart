@@ -30,9 +30,11 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void initState() {
     super.initState();
-
-    // postMethod(
-    //     context, '$getAllTeachers?page=1', null, false, getAllTeachersRepo);
+    if (Get.find<AllTeachersController>().teacherListForPagination.isEmpty) {
+      Get.find<AllTeachersController>().updateTeachersLoader(false);
+      postMethod(
+          context, '$getAllTeachers?page=1', null, false, getAllTeachersRepo);
+    }
   }
 
   @override

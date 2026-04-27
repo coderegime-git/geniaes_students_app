@@ -15,6 +15,7 @@ import '../config/app_colors.dart';
 import '../config/app_configs.dart';
 import '../config/app_font.dart';
 import '../config/app_text_styles.dart';
+import '../controllers/all_settings_controller.dart';
 import '../controllers/general_controller.dart';
 import '../controllers/live_chat_controller.dart';
 import '../repositories/live_chat_messages_repo.dart';
@@ -30,7 +31,11 @@ class LiveChatScreen extends StatefulWidget {
 class _LiveChatScreenState extends State<LiveChatScreen> {
   final logic = Get.put(LiveChatController());
   PusherChannelsFlutter pusherChannels = PusherChannelsFlutter.getInstance();
-  final _apiKey = AppConfigs.pusherAppKey;
+
+  String get _apiKey => AppConfigs.pusherAppKey.toString();
+  String get _appSecret => AppConfigs.pusherAppSecret.toString();
+  String get _appCluster => AppConfigs.pusherAppCluster.toString();
+
   final _channelName =
       "private-chat-message.${Get.find<GeneralController>().selectedAppointmentHistoryForView.id}";
   final _eventName = "chat-message";
@@ -54,16 +59,16 @@ class _LiveChatScreenState extends State<LiveChatScreen> {
         getLiveChatMessagesRepo);
 
     // Initialize Pusher Channel
+    // Initialize Pusher Channel
     try {
       pusherChannels.init(
         apiKey: _apiKey,
-        cluster: AppConfigs.pusherAppCluster,
+        cluster: _appCluster,
         logToConsole: true,
         onConnectionStateChange: onConnectionStateChange,
         onError: onError,
         onSubscriptionSucceeded: onSubscriptionSucceeded,
-        onEvent: onEvent(
-            PusherEvent(channelName: _channelName, eventName: _eventName)),
+        onEvent: (event) => onEvent(event),
         onSubscriptionError: onSubscriptionError,
         onDecryptionFailure: onDecryptionFailure,
         onMemberAdded: onMemberAdded,
@@ -97,45 +102,27 @@ class _LiveChatScreenState extends State<LiveChatScreen> {
       log("ERROR: $e");
     }
     log("${pusherChannels.channels.toString()} PUSHERDATA");
-    log("${eventResponseMap['channel'].toString()} CHANNELNAME2");
   }
 
   dynamic onAuthorizer(String channelName, String socketId, dynamic options) {
-    log("OnAuthorizer: $channelName OnAuthorizerSocket: $socketId");
-
-    String calculateHMAC(String secret, String stringToSign) {
-      final secretKey = utf8.encode(secret);
-      final message = utf8.encode(stringToSign);
-      final hmac = Hmac(sha256, secretKey);
-      final digest = hmac.convert(message);
-      final signature = digest.toString();
-      return signature;
+    if (_appSecret.isEmpty) {
+      log("LiveChat: appSecret is empty, auth will fail");
+      return {"auth": ""};
     }
-
-    final secret = AppConfigs.pusherAppSecret;
-    final stringToSign = '$socketId:$channelName';
-
-    final signature = calculateHMAC(secret, stringToSign);
-
-    final auth = '$_apiKey:$signature';
-
-    print('auth = $auth');
-
+    String stringToSign = "$socketId:$channelName";
+    var bytesToSign = utf8.encode(stringToSign);
+    var secretKey = utf8.encode(_appSecret);
+    var hmacSha256 = Hmac(sha256, secretKey);
+    var signature = hmacSha256.convert(bytesToSign);
+    String auth = "$_apiKey:$signature";
     return {"auth": auth};
   }
 
   void onConnectionStateChange(dynamic currentState, dynamic previousState) {
     if (currentState == "CONNECTING" || currentState == "RECONNECTING") {
       Get.find<GeneralController>().updateCallLoaderController(true);
-      log("Connecting Loader");
     } else if (currentState == "CONNECTED") {
-      // Get.find<LiveChatController>()
-      //     .getLiveChatMessagesModel
-      //     .data!
-      //     .add(eventResponseMap["message"]);
-
       Get.find<GeneralController>().updateCallLoaderController(false);
-      log("Connected Loader");
     }
     log("Connection: $currentState");
   }
@@ -150,8 +137,6 @@ class _LiveChatScreenState extends State<LiveChatScreen> {
 
   void onSubscriptionSucceeded(String channelName, dynamic data) {
     log("onSubscriptionSucceeded: $channelName data: $data");
-    final me = pusherChannels.getChannel(channelName)?.me;
-    log("Me: $me");
   }
 
   void onSubscriptionError(String message, dynamic e) {
@@ -170,18 +155,9 @@ class _LiveChatScreenState extends State<LiveChatScreen> {
     log("onMemberRemoved: $channelName user: $member");
   }
 
-  void onSubscriptionCount(String channelName, int subscriptionCount) {
-    log("onSubscriptionCount: $channelName subscriptionCount: $subscriptionCount");
-  }
-
-  void onTriggerEventPressed() {
-    pusherChannels
-        .trigger(PusherEvent(channelName: _channelName, eventName: _eventName));
-    log("TRIGGERSUCCESS");
-  }
-
   @override
   Widget build(BuildContext context) {
+    final generalController = Get.find<GeneralController>();
     return GetBuilder<GeneralController>(builder: (generalController) {
       return GetBuilder<LiveChatController>(builder: (liveChatController) {
         return ModalProgressHUD(
@@ -201,7 +177,8 @@ class _LiveChatScreenState extends State<LiveChatScreen> {
                   pusherChannels.disconnect();
                 },
                 titleText: generalController
-                    .selectedAppointmentHistoryForView.teacherName!,
+                        .selectedAppointmentHistoryForView.teacherName ??
+                    "Teacher",
               ),
             ),
             bottomNavigationBar: Padding(
@@ -218,9 +195,9 @@ class _LiveChatScreenState extends State<LiveChatScreen> {
                       controller: liveChatController.messageController,
                       onTap: () {
                         Future.delayed(const Duration(seconds: 1)).whenComplete(
-                            () => liveChatController.chatScrollController!
+                            () => liveChatController.chatScrollController
                                 .animateTo(
-                                    liveChatController.chatScrollController!
+                                    liveChatController.chatScrollController
                                         .position.maxScrollExtent,
                                     curve: Curves.easeOut,
                                     duration:
@@ -324,13 +301,19 @@ class _LiveChatScreenState extends State<LiveChatScreen> {
                               liveChatController.messageList.length,
                               (index) {
                                 return Align(
-                                  alignment: liveChatController
-                                                  .messageList[index]
-                                              ["sender_id"] ==
-                                          generalController
-                                              .selectedAppointmentHistoryForView
-                                              .studentId
-                                      ? Alignment.centerRight
+                                  alignment: (liveChatController
+                                                  .messageList[index] !=
+                                              null &&
+                                          liveChatController.messageList[index]
+                                                  ["sender_id"] !=
+                                              null)
+                                      ? (liveChatController.messageList[index]
+                                                  ["sender_id"] ==
+                                              generalController
+                                                  .selectedAppointmentHistoryForView
+                                                  .studentId
+                                          ? Alignment.centerRight
+                                          : Alignment.centerLeft)
                                       : Alignment.centerLeft,
                                   child: Container(
                                     margin:
@@ -338,12 +321,15 @@ class _LiveChatScreenState extends State<LiveChatScreen> {
                                     padding: EdgeInsets.fromLTRB(
                                         10.w, 12.h, 10.w, 12.h),
                                     decoration: BoxDecoration(
-                                        color: liveChatController
-                                                        .messageList[index]
-                                                    ["sender_id"] ==
-                                                generalController
-                                                    .selectedAppointmentHistoryForView
-                                                    .studentId
+                                        color: (liveChatController
+                                                        .messageList[index] !=
+                                                    null &&
+                                                liveChatController
+                                                            .messageList[index]
+                                                        ["sender_id"] ==
+                                                    generalController
+                                                        .selectedAppointmentHistoryForView
+                                                        .studentId)
                                             ? AppColors.primaryColor
                                             : AppColors.primaryColor
                                                 .withOpacity(0.6),
@@ -354,13 +340,13 @@ class _LiveChatScreenState extends State<LiveChatScreen> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          "${liveChatController.messageList[index]["message"]}",
+                                          "${liveChatController.messageList[index]?["message"] ?? ""}",
                                           style: AppTextStyles.bodyTextStyle16,
                                         ),
                                         SizedBox(height: 6.h),
                                         Text(
                                           generalController.displayDateTime(
-                                              "${liveChatController.messageList[index]["created_at"]}"),
+                                              "${liveChatController.messageList[index]?["created_at"] ?? ""}"),
                                           style: AppTextStyles.bodyTextStyle4,
                                         ),
                                       ],

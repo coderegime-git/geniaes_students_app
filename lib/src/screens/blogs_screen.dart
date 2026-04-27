@@ -63,7 +63,7 @@ class BlogsScreenState extends State<BlogsScreen> {
                         crossAxisCount: 2,
                         crossAxisSpacing: 18.0,
                         mainAxisSpacing: 12.0,
-                        childAspectRatio: 0.63,
+                        childAspectRatio: 0.58,
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         children: List.generate(
@@ -112,7 +112,7 @@ class BlogsScreenState extends State<BlogsScreen> {
                                                 image: NetworkImage(
                                                     "$mediaUrl${allBlogsPostsController.blogsPostsListForPagination[index].image}"),
                                                 fit: BoxFit.cover,
-                                                height: 160.h,
+                                                height: 150.h,
                                                 width: 160.w,
                                               )
                                             : Image(

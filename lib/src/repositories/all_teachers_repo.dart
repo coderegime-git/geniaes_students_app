@@ -18,6 +18,9 @@ getAllTeachersRepo(
     log("${Get.find<AllTeachersController>().getAllTeachersModel.data!.data!.length.toString()} Total Teachers Length");
     Get.find<AllTeachersController>().updateTeachersLoader(true);
 
+    if (Get.find<AllTeachersController>().getAllTeachersModel.data!.meta!.currentPage == 1) {
+      Get.find<AllTeachersController>().clearTeachersList();
+    }
     for (var element
         in Get.find<AllTeachersController>().getAllTeachersModel.data!.data!) {
       Get.find<AllTeachersController>().updateTeacherListForPagination(element);
@@ -48,15 +51,13 @@ getAllSearchedTeachersRepo(
     Get.find<AllTeachersController>().updateTeachersLoader(true);
     log("${Get.find<AllTeachersController>().getAllTeachersModel.data!.data!.length.toString()} Total Teachers Length");
 
+    Get.find<AllTeachersController>().clearTeachersList();
     for (var element
         in Get.find<AllTeachersController>().getAllTeachersModel.data!.data!) {
       Get.find<AllTeachersController>().updateTeacherListForPagination(element);
     }
 
     Get.find<GeneralController>().changeGetPaginationProgressCheck(false);
-
-    // if (Get.find<AllTeachersCategoriesController>().getAllTeacherCategoriesDataModel.status == true) {
-    // } else {}
   } else if (!responseCheck) {
     Get.find<AllTeachersController>().updateTeachersLoader(true);
   }

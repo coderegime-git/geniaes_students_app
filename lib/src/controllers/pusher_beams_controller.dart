@@ -11,6 +11,7 @@ import '../routes.dart';
 
 import '../screens/agora_call/agora_logic.dart';
 import '../screens/incoming_call_screen.dart';
+import '../models/student_appointment_history_model.dart';
 import 'general_controller.dart';
 
 class PusherBeamsController extends GetxController {
@@ -104,24 +105,30 @@ class PusherBeamsController extends GetxController {
     log("${jsonDecode(allData["payload"])} PAYLOAD");
     log("${appointmentData} APPOINTMENT");
 
-    // Get.find<GeneralController>().channelForCall =
-    //     payload["channel_name"].toString();
-    // Get.find<GeneralController>().tokenForCall = payload["token"].toString();
     Get.find<GeneralController>().updateChannelForCall(payload["channel_name"]);
-    Get.find<GeneralController>().updateTokenForCall(payload["token"]);
-    // Get.find<GeneralController>()
-    //     .updateCallerType(appointmentData["appointment_type_id"]);
-    log("${appointmentData["teacher_name"]} TEACHERNAME");
-    log("${payload["channel_name"]} CHANNELNAME");
+    Get.find<GeneralController>().updateTokenForCall(payload["token"].toString());
+
+    log("CHANNEL NAME: ${payload["channel_name"]}");
 
     if (Get.find<GeneralController>().storageBox.hasData('userData') &&
         Get.find<GeneralController>().storageBox.hasData('authToken')) {
+      // Update GeneralController with appointment data so call screens can use it
+      final tempAppt = StudentAppointmentHistoryModel(
+        id: appointmentData["id"],
+        studentId: appointmentData["student_id"],
+        teacherName: appointmentData["teacher_name"]?.toString() ?? "Teacher",
+        teacherImage: appointmentData["teacher_image"]?.toString() ?? "",
+        appointmentTypeName: appointmentData["appointment_type_name"],
+        appointmentTypeId: appointmentData["appointment_type_id"],
+      );
+      Get.find<GeneralController>()
+          .updateSelectedAppointmentHistoryForView(tempAppt);
+
       Get.to(
           IncomingCallScreen(
             callAcceptOnTap:
                 appointmentData["appointment_type_id"].toString() == "1"
                     ? () {
-                        // Get.to(VideoCall());
                         Get.back();
                         Get.toNamed(PageRoutes.videoCallScreen);
                       }
@@ -130,15 +137,22 @@ class PusherBeamsController extends GetxController {
                             Get.back();
                             Get.toNamed(PageRoutes.audioCallScreen);
                           }
-                        : () {},
+                        : () {
+                            Get.back();
+                            Get.toNamed(PageRoutes.liveChatScreen);
+                          },
             callRejectOnTap: () {
               Get.find<AgoraLogic>().leaveChannel();
               Get.back();
             },
-            callingUserName: appointmentData["teacher_name"].toString(),
-            image: '',
-            incomingCallType:
-                "Incoming ${appointmentData["appointment_type_name"]}",
+            callingUserName:
+                appointmentData["teacher_name"]?.toString() ?? "Teacher",
+            image: appointmentData["teacher_image"]?.toString() ?? '',
+            incomingCallType: appointmentData["appointment_type_id"]
+                        .toString() ==
+                    "3"
+                ? "Incoming Live Chat"
+                : "Incoming ${appointmentData["appointment_type_name"] ?? 'Call'}",
           ),
           fullscreenDialog: true,
           transition: Transition.downToUp,

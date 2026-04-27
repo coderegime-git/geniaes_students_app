@@ -14,6 +14,8 @@ import '../controllers/live_chat_controller.dart';
 import '../routes.dart';
 import '../widgets/appbar_widget.dart';
 import '../widgets/button_widget.dart';
+import '../api_services/get_service.dart';
+import '../repositories/generate_agora_token_repo.dart';
 
 class AppointmentDetailScreen extends StatefulWidget {
   const AppointmentDetailScreen({super.key});
@@ -79,7 +81,7 @@ class AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                           Text(
                             // "Jhon Doe",
                             generalController
-                                .selectedAppointmentHistoryForView.teacherName!,
+                                .selectedAppointmentHistoryForView.teacherName ?? "Teacher",
                             textAlign: TextAlign.start,
                             style: AppTextStyles.bodyTextStyle14,
                           ),
@@ -96,7 +98,7 @@ class AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                               Text(
                                 generalController
                                     .selectedAppointmentHistoryForView
-                                    .appointmentTypeName!,
+                                    .appointmentTypeName ?? "",
                                 textAlign: TextAlign.start,
                                 style: AppTextStyles.bodyTextStyle9,
                               ),
@@ -131,7 +133,7 @@ class AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                     child: Text(
                       // "Pending",
                       generalController.selectedAppointmentHistoryForView
-                          .appointmentStatusName!,
+                          .appointmentStatusName ?? "",
                       style: AppTextStyles.bodyTextStyle4,
                     ),
                   ),
@@ -173,7 +175,7 @@ class AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                           SizedBox(height: 6.h),
                           Text(
                             // "Appointment Type",
-                            "${generalController.selectedAppointmentHistoryForView.date!}",
+                            "${generalController.selectedAppointmentHistoryForView.date ?? ""}",
                             style: AppTextStyles.bodyTextStyle11,
                           ),
                         ],
@@ -336,7 +338,7 @@ class AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                     SizedBox(height: 6.h),
                     Text(
                       generalController
-                          .selectedAppointmentHistoryForView.question!,
+                          .selectedAppointmentHistoryForView.question ?? "",
                       style: AppTextStyles.bodyTextStyle7,
                     ),
                     SizedBox(height: 18.h),
@@ -371,18 +373,69 @@ class AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
               ),
               generalController.selectedAppointmentHistoryForView
                               .appointmentStatusCode ==
-                          2 &&
-                      generalController.selectedAppointmentHistoryForView
-                              .appointmentTypeId ==
-                          3
-                  ? ButtonWidgetOne(
-                      onTap: () {
-                        Get.toNamed(PageRoutes.liveChatScreen);
-                      },
-                      buttonText: LanguageConstant.chatNow.tr,
-                      buttonTextStyle: AppTextStyles.buttonTextStyle1,
-                      borderRadius: 40,
-                      buttonColor: AppColors.gradientOne)
+                          2
+                  ? Column(
+                      children: [
+                        generalController.selectedAppointmentHistoryForView
+                                    .appointmentTypeId ==
+                                1
+                            ? ButtonWidgetOne(
+                                onTap: () {
+                                  final apptId = generalController
+                                      .selectedAppointmentHistoryForView.id;
+                                  final channel = "appt_$apptId";
+                                  generalController
+                                      .updateChannelForCall(channel);
+                                  generalController.updateCallerType(2);
+
+                                  // Dummy token for testing
+                                  String dummyToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzIiwianRpIjoiNjI2OTE3NmQwYzRiOTgzZDFiNzUxZTA1MTcxYzkyN2FiNjE4OTNjNGI3ZTk4YzBhM2U5Mjc4OGNiZDVhYThhZjZjNjA2YjEwNzhkY2U5ZWIiLCJpYXQiOjE3NzY4MzkzMjEuMzE0MDE0LCJuYmYiOjE3NzY4MzkzMjEuMzE0MDE3LCJleHAiOjE4MDgzNzUzMjEuMjk5MTk1LCJzdWIiOiIzMzAiLCJzY29wZXMiOltdfQ.myfmSMF9ZVnGbwGquvCvcA0eY0iaELcTaqF7zUkq-_CXTT3BtvRc3MKzNn-B7emCB6yNcJzyNXi-4uonxzp0usrblJi4MqMrUoRDf2oPeIlj-GYvHlbQR9urboojYWDcdflyEYABR3zPIUF7i0SRBixAnbRnh6tYgB0vXQQ9OQiydhTQ7YjIt8FncbjS3sqczEa3oLD5hZP3UxSDTo5YKkj-YAuRkpQ5brySq7j4NFrQuxnXJfscYFOu2HBZvbZxKkb0SDqu0RMTgxjrvE-kL5zq4MrexVPj9UR-f0OYrbiCVKzDL9BpFKOkVOFbsk7-tKYYUJCzXnOapTcx1J4ll_2PTl5Sppjrd5WjcDowkEpxRl6aqcpD0XEuWgp0OY_G83Owmvkhpz4_s_AQrlJTUzPiX_XmhkBmYLV8BOZ5xVZycmKnl_o9vb6NF1hwub3iK1HhVp06HkJA3sAkKkVTNPEBcSKxKQ67gHsy04RMl5TIKYVAhhSsJiT_3I7ZumPNE_rF0fybzuRwSRGJBJJQkMUae72QoT1XU4GiJW960f0DMwjMeJZ5XHI5u40yhON-A3ZrwlfP20o3ynYfBShHhGA13_2E1_7x4RWIwhOp9gYOn9gNsv4rdPjEQKwppj90Y5Wc35dNVZGYTA7e185IJcXK7pX6KaYvvA3ada4_ew8";
+                                  generalController.updateTokenForCall(dummyToken);
+                                  Get.toNamed(PageRoutes.videoCallScreen);
+                                },
+                                buttonText: LanguageConstant.videoCall.tr,
+                                buttonTextStyle: AppTextStyles.buttonTextStyle1,
+                                borderRadius: 40,
+                                buttonColor: AppColors.gradientOne)
+                            : generalController
+                                        .selectedAppointmentHistoryForView
+                                        .appointmentTypeId ==
+                                    2
+                                ? ButtonWidgetOne(
+                                    onTap: () {
+                                      final apptId = generalController
+                                          .selectedAppointmentHistoryForView.id;
+                                      final channel = "appt_$apptId";
+                                      generalController
+                                          .updateChannelForCall(channel);
+                                      generalController.updateCallerType(2);
+
+                                      // Dummy token for testing
+                                      String dummyToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzIiwianRpIjoiNjI2OTE3NmQwYzRiOTgzZDFiNzUxZTA1MTcxYzkyN2FiNjE4OTNjNGI3ZTk4YzBhM2U5Mjc4OGNiZDVhYThhZjZjNjA2YjEwNzhkY2U5ZWIiLCJpYXQiOjE3NzY4MzkzMjEuMzE0MDE0LCJuYmYiOjE3NzY4MzkzMjEuMzE0MDE3LCJleHAiOjE4MDgzNzUzMjEuMjk5MTk1LCJzdWIiOiIzMzAiLCJzY29wZXMiOltdfQ.myfmSMF9ZVnGbwGquvCvcA0eY0iaELcTaqF7zUkq-_CXTT3BtvRc3MKzNn-B7emCB6yNcJzyNXi-4uonxzp0usrblJi4MqMrUoRDf2oPeIlj-GYvHlbQR9urboojYWDcdflyEYABR3zPIUF7i0SRBixAnbRnh6tYgB0vXQQ9OQiydhTQ7YjIt8FncbjS3sqczEa3oLD5hZP3UxSDTo5YKkj-YAuRkpQ5brySq7j4NFrQuxnXJfscYFOu2HBZvbZxKkb0SDqu0RMTgxjrvE-kL5zq4MrexVPj9UR-f0OYrbiCVKzDL9BpFKOkVOFbsk7-tKYYUJCzXnOapTcx1J4ll_2PTl5Sppjrd5WjcDowkEpxRl6aqcpD0XEuWgp0OY_G83Owmvkhpz4_s_AQrlJTUzPiX_XmhkBmYLV8BOZ5xVZycmKnl_o9vb6NF1hwub3iK1HhVp06HkJA3sAkKkVTNPEBcSKxKQ67gHsy04RMl5TIKYVAhhSsJiT_3I7ZumPNE_rF0fybzuRwSRGJBJJQkMUae72QoT1XU4GiJW960f0DMwjMeJZ5XHI5u40yhON-A3ZrwlfP20o3ynYfBShHhGA13_2E1_7x4RWIwhOp9gYOn9gNsv4rdPjEQKwppj90Y5Wc35dNVZGYTA7e185IJcXK7pX6KaYvvA3ada4_ew8";
+                                      generalController.updateTokenForCall(dummyToken);
+                                      Get.toNamed(PageRoutes.audioCallScreen);
+                                    },
+                                    buttonText: LanguageConstant.audioCall.tr,
+                                    buttonTextStyle:
+                                        AppTextStyles.buttonTextStyle1,
+                                    borderRadius: 40,
+                                    buttonColor: AppColors.gradientOne)
+                                : generalController
+                                            .selectedAppointmentHistoryForView
+                                            .appointmentTypeId ==
+                                        3
+                                    ? ButtonWidgetOne(
+                                        onTap: () {
+                                          Get.toNamed(PageRoutes.liveChatScreen);
+                                        },
+                                        buttonText: LanguageConstant.chatNow.tr,
+                                        buttonTextStyle:
+                                            AppTextStyles.buttonTextStyle1,
+                                        borderRadius: 40,
+                                        buttonColor: AppColors.gradientOne)
+                                    : Container(),
+                      ],
+                    )
                   : Container(),
             ],
           ),

@@ -16,6 +16,7 @@ getTeachersByCategoryRepo(
         .updateTeachersByCategoryLoader(true);
     log("${Get.find<TeachersByCategoryController>().getAllTeachersModel.data!.data!.length.toString()} Total Teachers From Category Length");
 
+    Get.find<TeachersByCategoryController>().clearTeachersList();
     for (var element in Get.find<TeachersByCategoryController>()
         .getAllTeachersModel
         .data!

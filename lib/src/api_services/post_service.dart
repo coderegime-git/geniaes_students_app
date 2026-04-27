@@ -44,47 +44,41 @@ postMethod(
   log('postData.... $postData');
   log('dioData.... ${dio.options.headers}');
 
+  Get.find<ApiController>().changeInternetCheckerState(true);
+
   try {
-    final result = await InternetAddress.lookup('google.com');
-    if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-      Get.find<ApiController>().changeInternetCheckerState(true);
+    response = await dio.post(apiUrl, data: postData);
+    if (response.statusCode == 200) {
+      log('response  ....  ${response.data}');
+      executionMethod(context, true, response.data);
 
-      try {
-        response = await dio.post(apiUrl, data: postData);
-        if (response.statusCode == 200) {
-          log('response  ....  ${response.data}');
-          executionMethod(context, true, response.data);
-
-          return;
-        }
-        // log('response   ....  $response');
-        // executionMethod(context, false, {'status': null});
-      } on dio_instance.DioError catch (e) {
-        log('Dio Error  ....  ${e.response}');
-        executionMethod(context, false, e.response!.data);
-
-        if (e.response != null) {
-        } else {}
-      }
+      return;
     }
-  } on SocketException catch (_) {
-    Get.find<GeneralController>().updateFormLoaderController(false);
-    showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return CustomDialogBox(
-            title: LanguageConstant.pleaseTryAgain.tr,
-            titleColor: AppColors.customDialogErrorColor,
-            descriptions: LanguageConstant.internetNotConnected.tr,
-            text: LanguageConstant.ok.tr,
-            functionCall: () {
-              Navigator.pop(context);
-            },
-            img: 'assets/icons/dialog_error.png',
-          );
-        });
-    Get.find<ApiController>().changeInternetCheckerState(false);
+  } on dio_instance.DioError catch (e) {
+    log('Dio Error  ....  ${e.response}');
+    if (e.type == dio_instance.DioErrorType.connectionError ||
+        e.type == dio_instance.DioErrorType.connectionTimeout ||
+        e.error is SocketException) {
+      Get.find<GeneralController>().updateFormLoaderController(false);
+      showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return CustomDialogBox(
+              title: LanguageConstant.pleaseTryAgain.tr,
+              titleColor: AppColors.customDialogErrorColor,
+              descriptions: LanguageConstant.internetNotConnected.tr,
+              text: LanguageConstant.ok.tr,
+              functionCall: () {
+                Navigator.pop(context);
+              },
+              img: 'assets/icons/dialog_error.png',
+            );
+          });
+      Get.find<ApiController>().changeInternetCheckerState(false);
+    } else {
+      executionMethod(context, false, e.response?.data ?? {'message': e.message});
+    }
   }
 }
 
@@ -119,46 +113,40 @@ postMethodwithFile(
   log('postData.... ${postData.fields}');
   log('dioData.... ${dio.options.headers}');
 
+  Get.find<ApiController>().changeInternetCheckerState(true);
+
   try {
-    final result = await InternetAddress.lookup('google.com');
-    if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-      Get.find<ApiController>().changeInternetCheckerState(true);
+    response = await dio.post(apiUrl, data: postData);
+    if (response.statusCode == 200) {
+      // log('response  ....  ${response.data}');
+      executionMethod(context, true, response.data);
 
-      try {
-        response = await dio.post(apiUrl, data: postData);
-        if (response.statusCode == 200) {
-          // log('response  ....  ${response.data}');
-          executionMethod(context, true, response.data);
-
-          return;
-        }
-        // log('response   ....  $response');
-        // executionMethod(context, false, {'status': null});
-      } on dio_instance.DioError catch (e) {
-        log('Dio Error  ....  ${e.response}');
-        executionMethod(context, false, e.response!.data);
-
-        if (e.response != null) {
-        } else {}
-      }
+      return;
     }
-  } on SocketException catch (_) {
-    Get.find<GeneralController>().updateFormLoaderController(false);
-    showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return CustomDialogBox(
-            title: LanguageConstant.pleaseTryAgain.tr,
-            titleColor: AppColors.customDialogErrorColor,
-            descriptions: LanguageConstant.internetNotConnected.tr,
-            text: LanguageConstant.ok.tr,
-            functionCall: () {
-              Navigator.pop(context);
-            },
-            img: 'assets/icons/dialog_error.png',
-          );
-        });
-    Get.find<ApiController>().changeInternetCheckerState(false);
+  } on dio_instance.DioError catch (e) {
+    log('Dio Error  ....  ${e.response}');
+    if (e.type == dio_instance.DioErrorType.connectionError ||
+        e.type == dio_instance.DioErrorType.connectionTimeout ||
+        e.error is SocketException) {
+      Get.find<GeneralController>().updateFormLoaderController(false);
+      showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return CustomDialogBox(
+              title: LanguageConstant.pleaseTryAgain.tr,
+              titleColor: AppColors.customDialogErrorColor,
+              descriptions: LanguageConstant.internetNotConnected.tr,
+              text: LanguageConstant.ok.tr,
+              functionCall: () {
+                Navigator.pop(context);
+              },
+              img: 'assets/icons/dialog_error.png',
+            );
+          });
+      Get.find<ApiController>().changeInternetCheckerState(false);
+    } else {
+      executionMethod(context, false, e.response?.data ?? {'message': e.message});
+    }
   }
 }

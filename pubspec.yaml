@@ -46,7 +46,7 @@ dependencies:
   firebase_messaging: 
   firebase_core: ^3.15.2
   firebase_auth: ^5.3.4
-  agora_rtc_engine: ^6.0.0
+  agora_rtc_engine: ^6.3.0
   flutter_local_notifications: 
   skeleton_loader: ^2.0.0+4
   shared_preferences: ^2.1.0
@@ -70,6 +70,8 @@ dependencies:
   global_configuration: 
   pusher_beams:
      path: lib/push-notifications-flutter/packages/pusher_beams
+#  cached_network_image: ^3.3.1
+
 
 
 

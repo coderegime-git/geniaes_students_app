@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/foundation.dart';
@@ -13,8 +14,7 @@ import '../../config/app_font.dart';
 import '../../controllers/general_controller.dart';
 import 'agora.config.dart' as config;
 
-/// JoinChannelAudio Example
-
+/// Student-side audio call screen.
 class JoinChannelAudio extends StatefulWidget {
   final String? channelId;
 
@@ -26,172 +26,140 @@ class JoinChannelAudio extends StatefulWidget {
 
 class _State extends State<JoinChannelAudio> {
   late final RtcEngine _engine;
-  bool isJoined = false,
-      openMicrophone = true,
-      enableSpeakerphone = false,
-      playEffect = false;
-  int? remoteUid;
-  int callerType2 = 1;
-  _callEndCheckMethod() {
-    if (callEnd == 2) {
-      _leaveChannel();
-      Get.back();
-    }
-  }
-
+  bool isJoined = false;
+  bool openMicrophone = true;
+  bool enableSpeakerphone = false;
+  int? callEnd = 0;
+  bool _disposed = false;
   Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    // _joinChannel();
+    log('Student JoinChannelAudio: initState');
+
     _timer = Timer.periodic(const Duration(seconds: 2), (timer) {
       _callEndCheckMethod();
     });
-    _initEngine();
-    // if (Get.find<GeneralController>().callerType == 1) {
-    Future.delayed(
-      const Duration(seconds: 2),
-    ).whenComplete(() => _joinChannel());
-    // }
+
+    _initAndJoin();
   }
 
   @override
   void dispose() {
-    _timer!.cancel();
-    super.dispose();
+    _disposed = true;
+    _timer?.cancel();
+    _engine.leaveChannel();
     _engine.release();
+    super.dispose();
   }
 
-  int? callEnd = 0;
+  Future<void> _initAndJoin() async {
+    await _initEngine();
+    await Future.delayed(const Duration(milliseconds: 1500));
+    if (!_disposed) await _joinChannel();
+  }
 
-  _initEngine() async {
-    // _engine =
-    //     await RtcEngine.createWithContext(RtcEngineContext(config.agoraAppId));
-    // _addListeners();
-
-    // await _engine.enableAudio();
-    // await _engine.setChannelProfile(ChannelProfile.LiveBroadcasting);
-    // await _engine.setClientRole(ClientRole.Broadcaster);
-
+  Future<void> _initEngine() async {
     _engine = createAgoraRtcEngineEx();
     await _engine.initialize(RtcEngineContext(
       appId: config.agoraAppId,
-      channelProfile: ChannelProfileType.channelProfileLiveBroadcasting,
+      channelProfile: ChannelProfileType.channelProfileCommunication,
     ));
 
     _addListeners();
 
     await _engine.enableAudio();
     await _engine.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
+    log('Student JoinChannelAudio: engine ready');
   }
 
-  _addListeners() {
-    // _engine.registerEventHandler(RtcEngineEventHandler(
-    //   joinChannelSuccess: (channel, uid, elapsed) {
-    //     setState(() {
-    //       isJoined = true;
-    //     });
-    //   },
-    //   leaveChannel: (stats) async {
-    //     _leaveChannel();
-    //     setState(() {
-    //       isJoined = false;
-    //     });
-    //   },
-    //   userJoined: (uid, elapsed) {
-    //     setState(() {
-    //       callEnd = 1;
-    //     });
-    //   },
-    //   userOffline: (uid, reason) {
-    //     setState(() {
-    //       if (callEnd == 1) {
-    //         callEnd = 2;
-    //       }
-    //     });
-    //   },
-    // ));
-
+  void _addListeners() {
     _engine.registerEventHandler(RtcEngineEventHandler(
       onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
-        isJoined = true;
+        log('Student JoinChannelAudio: joined channel ${connection.channelId}');
+        if (!_disposed) setState(() => isJoined = true);
       },
       onLeaveChannel: (RtcConnection connection, RtcStats stats) {
-        isJoined = false;
+        log('Student JoinChannelAudio: left channel');
+        if (!_disposed) setState(() => isJoined = false);
       },
       onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
-        callEnd = 1;
+        log('Student JoinChannelAudio: teacher $remoteUid joined');
+        if (!_disposed) setState(() => callEnd = 1);
       },
       onUserOffline: (RtcConnection connection, int remoteUid,
           UserOfflineReasonType reason) {
-        if (callEnd == 1) {
-          callEnd = 2;
+        log('Student JoinChannelAudio: teacher $remoteUid offline');
+        if (!_disposed) {
+          setState(() {
+            if (callEnd == 1) callEnd = 2;
+          });
         }
       },
     ));
   }
 
-  _joinChannel() async {
-    // if (defaultTargetPlatform == TargetPlatform.android) {
-    //   await Permission.microphone.request();
-    // }
-
-    // await _engine
-    //     .joinChannel(
-    //         Get.find<GeneralController>().tokenForCall,
-    //         Get.find<GeneralController>().channelForCall!,
-    //         null,
-    //         Get.find<GeneralController>().callerType)
-    //     .catchError((onError) {});
+  Future<void> _joinChannel() async {
     if (defaultTargetPlatform == TargetPlatform.android) {
       await Permission.microphone.request();
     }
 
+    final gc = Get.find<GeneralController>();
     await _engine
         .joinChannel(
-          token: Get.find<GeneralController>().tokenForCall!,
-          channelId: Get.find<GeneralController>().channelForCall!,
-          uid: Get.find<GeneralController>().callerType,
-          options: const ChannelMediaOptions(),
+          token: gc.tokenForCall ?? '',
+          channelId: gc.channelForCall!,
+          uid: gc.callerType,
+          options: const ChannelMediaOptions(
+            channelProfile: ChannelProfileType.channelProfileCommunication,
+            clientRoleType: ClientRoleType.clientRoleBroadcaster,
+            publishMicrophoneTrack: true,
+            publishCameraTrack: false,
+            autoSubscribeAudio: true,
+            autoSubscribeVideo: false,
+          ),
         )
-        .catchError((onError) {});
+        .catchError((e) => log('Student JoinChannelAudio error: $e'));
+    log('Student JoinChannelAudio: joinChannel called');
   }
 
-  _leaveChannel() async {
+  Future<void> _leaveChannel() async {
     await _engine.leaveChannel();
   }
 
-  _switchMicrophone() {
-    _engine.enableLocalAudio(!openMicrophone).then((value) {
-      setState(() {
-        openMicrophone = !openMicrophone;
-      });
-    }).catchError((err) {});
+  void _callEndCheckMethod() {
+    if (callEnd == 2 && !_disposed) {
+      _timer?.cancel();
+      _leaveChannel();
+      Get.back();
+    }
   }
 
-  _switchSpeakerphone() {
-    _engine.setEnableSpeakerphone(!enableSpeakerphone).then((value) {
-      setState(() {
-        enableSpeakerphone = !enableSpeakerphone;
-      });
-    }).catchError((err) {});
+  void _switchMicrophone() {
+    _engine.enableLocalAudio(!openMicrophone).then((_) {
+      if (!_disposed) setState(() => openMicrophone = !openMicrophone);
+    }).catchError((e) => log('mic toggle error: $e'));
+  }
+
+  void _switchSpeakerphone() {
+    _engine.setEnableSpeakerphone(!enableSpeakerphone).then((_) {
+      if (!_disposed) setState(() => enableSpeakerphone = !enableSpeakerphone);
+    }).catchError((e) => log('speaker toggle error: $e'));
   }
 
   @override
   Widget build(BuildContext context) {
     // ignore: deprecated_member_use
     return WillPopScope(
-      onWillPop: () async {
-        return false;
-      },
+      onWillPop: () async => false,
       child: Scaffold(
         body: Container(
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
+          width: double.infinity,
+          height: double.infinity,
           decoration: const BoxDecoration(
             image: DecorationImage(
-              image: AssetImage("assets/images/call-bg.png"),
+              image: AssetImage('assets/images/call-bg.png'),
               fit: BoxFit.cover,
             ),
           ),
@@ -200,279 +168,94 @@ class _State extends State<JoinChannelAudio> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * .1,
-                ),
+                SizedBox(height: MediaQuery.of(context).size.height * .1),
+
+                // Teacher Avatar (fallback to login info image if not available)
                 CircleAvatar(
                   backgroundImage: NetworkImage(
-                      '$mediaUrl${Get.find<GeneralController>().currentUserModel!.loginInfo!.image}'),
+                      '$mediaUrl${Get.find<GeneralController>().selectedAppointmentHistoryForView.teacherImage ?? ""}'),
                   radius: 75.h,
                 ),
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * .2,
+
+                SizedBox(height: 16.h),
+
+                // Status
+                Text(
+                  isJoined ? 'Audio Call in Progress' : 'Connecting…',
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontFamily: AppFont.primaryFontFamily,
+                    color: Colors.white,
+                  ),
                 ),
+
+                SizedBox(height: MediaQuery.of(context).size.height * .12),
+
                 Expanded(
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    height: double.infinity,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            ///---mute
-                            InkWell(
-                              onTap: () {
-                                _switchMicrophone();
-                              },
-                              child: CircleAvatar(
-                                radius: 30.r,
-                                backgroundColor: !openMicrophone
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          // Mute
+                          InkWell(
+                            onTap: _switchMicrophone,
+                            child: CircleAvatar(
+                              radius: 30.r,
+                              backgroundColor: !openMicrophone
+                                  ? AppColors.primaryColor
+                                  : Colors.white,
+                              child: Icon(
+                                openMicrophone ? Icons.mic : Icons.mic_off,
+                                color: openMicrophone
                                     ? AppColors.primaryColor
                                     : Colors.white,
-                                child: Icon(
-                                  openMicrophone ? Icons.mic : Icons.mic_off,
-                                  color: openMicrophone
-                                      ? AppColors.primaryColor
-                                      : Colors.white,
-                                  size: 25,
-                                ),
+                                size: 25,
                               ),
-                            ),
-
-                            ///---speaker
-                            InkWell(
-                              onTap: () {
-                                _switchSpeakerphone();
-                              },
-                              child: CircleAvatar(
-                                radius: 30.r,
-                                backgroundColor: enableSpeakerphone
-                                    ? AppColors.primaryColor
-                                    : AppColors.white,
-                                child: Icon(
-                                  enableSpeakerphone
-                                      ? Icons.volume_off
-                                      : Icons.volume_up,
-                                  color: enableSpeakerphone
-                                      ? AppColors.white
-                                      : AppColors.primaryColor,
-                                  size: 25,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        InkWell(
-                          onTap: () {
-                            _leaveChannel();
-                            Get.back();
-                          },
-                          child: const CircleAvatar(
-                            radius: 30,
-                            backgroundColor: Colors.red,
-                            child: Icon(
-                              Icons.call_end,
-                              color: AppColors.white,
-                              size: 25,
                             ),
                           ),
+
+                          // Speaker
+                          InkWell(
+                            onTap: _switchSpeakerphone,
+                            child: CircleAvatar(
+                              radius: 30.r,
+                              backgroundColor: enableSpeakerphone
+                                  ? AppColors.primaryColor
+                                  : Colors.white,
+                              child: Icon(
+                                enableSpeakerphone
+                                    ? Icons.volume_up
+                                    : Icons.volume_off,
+                                color: enableSpeakerphone
+                                    ? Colors.white
+                                    : AppColors.primaryColor,
+                                size: 25,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // End call
+                      InkWell(
+                        onTap: () async {
+                          await _leaveChannel();
+                          Get.back();
+                        },
+                        child: const CircleAvatar(
+                          radius: 30,
+                          backgroundColor: Colors.red,
+                          child: Icon(Icons.call_end,
+                              color: Colors.white, size: 25),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                )
+                ),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _onCallEnd(BuildContext context) {
-    Navigator.pop(context);
-  }
-
-  ringingView() {
-    return Scaffold(
-      body: Container(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
-            colors: [
-              AppColors.primaryColor,
-              AppColors.customDialogSuccessColor,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                height: MediaQuery.of(context).size.height * .1,
-              ),
-              Container(
-                height: 130.h,
-                width: 130.w,
-                decoration: const BoxDecoration(
-                    color: Colors.transparent,
-                    image: DecorationImage(
-                        image: AssetImage('assets/Icons/splash_logo.png'))),
-              ),
-              isJoined
-                  ? Padding(
-                      padding: EdgeInsets.fromLTRB(0, 27.h, 0, 0),
-                      child: Text(
-                        'Ringing',
-                        style: TextStyle(
-                            fontSize: 20.sp,
-                            fontFamily: AppFont.primaryFontFamily,
-                            color: Colors.white),
-                      ),
-                    )
-                  : Padding(
-                      padding: EdgeInsets.fromLTRB(0, 27.h, 0, 0),
-                      child: Text(
-                        'Calling',
-                        style: TextStyle(
-                            fontSize: 20.sp,
-                            fontFamily: AppFont.primaryFontFamily,
-                            color: Colors.white),
-                      ),
-                    ),
-              Expanded(
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.all(30.0),
-                    child: RawMaterialButton(
-                      onPressed: () {
-                        _leaveChannel();
-                        _onCallEnd(context);
-                      },
-                      shape: const CircleBorder(),
-                      elevation: 2.0,
-                      fillColor: Colors.redAccent,
-                      padding: const EdgeInsets.all(15.0),
-                      child: const Icon(
-                        Icons.clear,
-                        color: Colors.white,
-                        size: 35.0,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  receiverView() {
-    return Scaffold(
-      body: Container(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
-            colors: [
-              AppColors.primaryColor,
-              AppColors.customDialogSuccessColor,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                  child: Image.asset(
-                'assets/icons/icon_Video_.png',
-                width: MediaQuery.of(context).size.width * .6,
-              )),
-              Text(
-                'Call Alert',
-                style: TextStyle(
-                    fontSize: 20.sp,
-                    fontFamily: AppFont.primaryFontFamily,
-                    color: Colors.white),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              Text(
-                // '${LanguageConstant.youAreReceivingCallFrom.tr}'
-                Get.find<GeneralController>()
-                            .storageBox
-                            .read('userRole')
-                            .toString()
-                            .toUpperCase() ==
-                        'MENTEE'
-                    ? 'CONSULTANT'
-                    : 'USER',
-                style: TextStyle(
-                    fontSize: 15.sp,
-                    fontFamily: AppFont.primaryFontFamily,
-                    color: Colors.white),
-              ),
-              Expanded(
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.all(30.0),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: InkWell(
-                            onTap: () {
-                              Get.back();
-                            },
-                            child: CircleAvatar(
-                              backgroundColor: Colors.red,
-                              radius: 35.r,
-                              child: const Icon(
-                                Icons.clear,
-                                color: Colors.white,
-                                size: 35.0,
-                              ),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: InkWell(
-                            onTap: () {
-                              _joinChannel();
-                            },
-                            child: CircleAvatar(
-                              backgroundColor: AppColors.green,
-                              radius: 35.r,
-                              child: const Icon(
-                                Icons.call,
-                                color: Colors.white,
-                                size: 35.0,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
           ),
         ),
       ),

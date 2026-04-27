@@ -37,13 +37,20 @@ class CategoryCardWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            categoryImage,
+            Expanded(
+              // 👈 VERY IMPORTANT
+              child: ClipRRect(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                child: categoryImage,
+              ),
+            ),
             Padding(
               padding: EdgeInsets.fromLTRB(10.w, 10.h, 10.w, 10.h),
               child: Text(
-                // "Jhon Doe",
                 categoryName,
                 textAlign: TextAlign.start,
+                maxLines: 2, // 👈 prevents overflow
+                overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.bodyTextStyle12,
               ),
             ),

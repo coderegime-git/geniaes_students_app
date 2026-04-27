@@ -52,7 +52,11 @@ sendMessagesRepo(
     BuildContext context, bool responseCheck, Map<String, dynamic> response) {
   if (responseCheck) {
     Get.find<LiveChatController>().messageController.clear();
-    if (response['Status'].toString() == 'true') {
+    // Refresh list locally if the message was sent successfully
+    if (response['success'] == true || response['Status'] == true || response['Status'].toString() == 'true') {
+      if (response["data"] != null) {
+        Get.find<LiveChatController>().updateMessageList(response["data"]);
+      }
       Get.find<LiveChatController>().updateGetMessagesLoader(false);
     } else {
       Get.find<LiveChatController>().updateGetMessagesLoader(false);

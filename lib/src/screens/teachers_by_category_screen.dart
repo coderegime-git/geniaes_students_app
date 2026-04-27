@@ -34,7 +34,10 @@ class _TeachersByCategoryScreenState extends State<TeachersByCategoryScreen> {
   @override
   void initState() {
     super.initState();
-    postMethod(context, '$getTeachersByCategory$subCategorySlug', null, false,
+    Get.find<TeachersByCategoryController>()
+        .updateTeachersByCategoryLoader(false);
+    postMethod(
+        context, '$getTeachersBySubCategory$subCategorySlug', null, false,
         getTeachersByCategoryRepo);
   }
 

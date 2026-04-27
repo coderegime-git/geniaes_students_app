@@ -167,6 +167,7 @@ class _WalletTopUpScreenState extends State<WalletTopUpScreen> {
                 SizedBox(height: 20.h),
                 ButtonWidgetOne(
                     onTap: () {
+                      print("PAYMENT CALLING");
                       if (walletTopUpFromKey.currentState!.validate()) {
                         // Book Appointment API Make Payment
                         postMethod(

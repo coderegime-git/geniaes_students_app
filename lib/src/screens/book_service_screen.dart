@@ -65,7 +65,6 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
       setState(() {
         file = File(result.files.single.path!);
       });
-
       print(file!.path);
     } else {
       // User canceled the picker
