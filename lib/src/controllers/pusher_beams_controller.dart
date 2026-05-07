@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 
 import 'package:get/get.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:pusher_beams/pusher_beams.dart';
 import '../api_services/urls.dart';
 import '../models/pusher_payload_model.dart';
@@ -25,41 +26,51 @@ class PusherBeamsController extends GetxController {
 
   getSecure() async {
     final BeamsAuthProvider provider = BeamsAuthProvider()
-      ..authUrl = '${apiBaseUrl}pusher/beams-auth'
-      ..headers = {'Content-Type': 'application/json'}
+      ..authUrl = pusherBeamsAuthUrl
+      ..headers = {
+        'Content-Type': 'application/json',
+        'Authorization':
+        'Bearer ${Get.find<GeneralController>().storageBox.read('authToken')}'
+      }
       ..queryParams = {
         'user_id':
-            Get.find<GeneralController>().storageBox.read('userID').toString()
+        Get.find<GeneralController>().storageBox.read('userID').toString()
       }
-      ..credentials = 'omit';
+      ..credentials = 'include';
 
-    // if (Get.find<GeneralController>().storageBox.hasData('userID')) {
     await PusherBeams.instance.setDeviceInterests([
       Get.find<GeneralController>().storageBox.read('userID').toString(),
     ]);
-    // }
-    if (Get.find<GeneralController>().storageBox.hasData('userID')) {
-      await PusherBeams.instance.setUserId(
-        Get.find<GeneralController>().storageBox.read('userID').toString(),
-        provider,
-        (error) => {
-          if (error != null)
-            {
-              print("$error ERROR PUSHER"),
-            }
-          else
-            {
-              print("$error PUSHER2"),
-            },
 
-          // Success! Do something...
+    if (Get.find<GeneralController>().storageBox.hasData('userID')) {
+      final userId = Get.find<GeneralController>().storageBox.read('userID').toString();
+
+      print("User ID: $userId"); // 👈 prints here
+
+      await PusherBeams.instance.setUserId(
+        userId,
+        provider,
+            (error) {
+          if (error != null) {
+            log("Pusher Beams setUserId Error: $error");
+          } else {
+            log("Pusher Beams setUserId Success");
+          }
         },
       );
     }
   }
-
   initPusherBeams() async {
     log("INITIALIZE PUSHER");
+    
+    if (!kIsWeb) {
+      var status = await Permission.notification.status;
+      if (status.isDenied) {
+        await Permission.notification.request();
+      }
+    }
+    await PusherBeams.instance.start("9466bd1b-2413-4135-badc-36ae30931bac");
+
     log("${Get.find<GeneralController>().storageBox.hasData('userID')} USERIDTRUE");
     log("${Get.find<GeneralController>().storageBox.read('userID')} USERIDREAD");
 
@@ -70,7 +81,7 @@ class PusherBeamsController extends GetxController {
         .read('userID')
         .toString()
         .isNotEmpty) {
-      log(await "${PusherBeams.instance.getDeviceInterests()} DEVICEINTEREST");
+      log("${await PusherBeams.instance.getDeviceInterests()} DEVICEINTEREST");
     }
 
     // This is not intented to use in web

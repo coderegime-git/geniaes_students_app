@@ -99,16 +99,16 @@ class _State extends State<JoinChannelVideo> {
           });
         }
       },
-      onUserOffline: (RtcConnection connection, int uid,
-          UserOfflineReasonType reason) {
-        log('Student: remote user $uid offline');
-        if (!_disposed) {
-          setState(() {
-            if (callEnd == 1) callEnd = 2;
-            remoteUid = null;
-          });
-        }
-      },
+        onUserOffline: (connection, uid, reason) {
+          log('Student: remote user $uid offline');
+
+          if (!_disposed && remoteUid != null) {
+            setState(() {
+              callEnd = 2; // only if user was actually connected
+              remoteUid = null;
+            });
+          }
+        },
       onLeaveChannel: (RtcConnection connection, RtcStats stats) {
         log('Student: left channel');
         if (!_disposed) {
@@ -127,8 +127,11 @@ class _State extends State<JoinChannelVideo> {
     }
 
     final gc = Get.find<GeneralController>();
+    log('Channel ID: ${gc.channelForCall}');
+    log('Token: ${gc.tokenForCall}');
+    log('UID: ${gc.callerType}');
     await _engine.joinChannel(
-      token: gc.tokenForCall ?? '',   // null-safe: '' = no-token mode
+      token: '0062f7fb6408d184598b5d465da7dd1fe66IABbVZVdoouiuGyxRzcWHn6rwVAj2pwACjqvpWtijf9acEsLMAQAAAAAIgCMGAAAg6n0aQQAAQBjYfNpAwBjYfNpAgBjYfNpBABjYfNp',   // null-safe: '' = no-token mode
       channelId: gc.channelForCall!,
       uid: gc.callerType,
       options: const ChannelMediaOptions(
@@ -148,7 +151,8 @@ class _State extends State<JoinChannelVideo> {
   }
 
   void _callEndCheckMethod() {
-    if (callEnd == 2 && !_disposed) {
+    if (callEnd == 2 && remoteUid == null && !_disposed) {
+      log("Call ended properly");
       _leaveChannel();
       Get.back();
     }

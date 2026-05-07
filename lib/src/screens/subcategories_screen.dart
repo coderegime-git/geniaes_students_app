@@ -103,7 +103,9 @@ class _SubCategoriesScreenState extends State<SubCategoriesScreen> {
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(18),
-                        child: categoryImage != null
+                        child: categoryImage != null &&
+                                categoryImage!.isNotEmpty &&
+                                categoryImage.toString() != 'null'
                             ? Image(
                                 image: NetworkImage("$mediaUrl$categoryImage"),
                                 height: 120.h,

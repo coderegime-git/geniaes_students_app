@@ -13,6 +13,7 @@ String signInWithEmailURL = '${apiBaseUrl}auth/login';
 String socialLoginURL = '${apiBaseUrl}auth/social_login';
 String signOutURL = '${apiBaseUrl}auth/logout';
 String deleteAccountURL = '${apiBaseUrl}auth/delete_account';
+// String pusherBeamsURL = '${apiBaseUrl}pusher/beams-auth';
 
 ///---logged-in-user
 String getLoggedInUserUrl = '${apiBaseUrl}auth/user';
@@ -91,6 +92,7 @@ String getAcademyReviews = '${apiBaseUrl}filter_academy_reviews';
 ///---agora
 // String agoraTokenUrl = apiBaseUrl + 'agoraToken';
 String agoraTokenUrl = '${apiBaseUrl}students/api_generate_agora_token';
+String pusherBeamsAuthUrl = '${apiBaseUrl}pusher/beams-auth';
 
 ///---chat services
 String getMessagesUrl = '${apiBaseUrl}students/api_get_chat_messages/';

@@ -88,7 +88,6 @@ class SplashScreenState extends State<SplashScreen>
   Future checkFirstSeenAndNavigate() async {
     bool seen =
         (Get.find<GeneralController>().storageBox.read('seen') ?? false);
-
     if (seen) {
       Get.toNamed(PageRoutes.homeScreen);
     } else {

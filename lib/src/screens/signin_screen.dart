@@ -61,11 +61,7 @@ class _SigninScreenState extends State<SigninScreen> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Get.find<GetAllSettingsController>()
-                                .getAllSettingsModel
-                                .data!
-                                .logo!
-                                .isEmpty
+                        (Get.find<GetAllSettingsController>().getAllSettingsModel.data?.logo ?? "").isEmpty
                             ? Image.asset(
                                 "assets/icons/logo-text.png",
                                 width: 230.w,
@@ -73,6 +69,12 @@ class _SigninScreenState extends State<SigninScreen> {
                             : Image.network(
                                 "${AppConfigs.mediaUrl}${Get.find<GetAllSettingsController>().getAllSettingsModel.data!.logo}",
                                 width: 230.w,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Image.asset(
+                                    "assets/icons/logo-text.png",
+                                    width: 230.w,
+                                  );
+                                },
                               ),
                         SizedBox(height: 32.h),
                         Text(

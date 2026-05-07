@@ -60,10 +60,11 @@ class _HomeAllTeachersListWidgetState extends State<HomeAllTeachersListWidget> {
                         return HomeTeacherCardWidget(
                           image: ClipRRect(
                             borderRadius: BorderRadius.circular(10),
-                            // ignore: unrelated_type_equality_checks
                             child: allTeachersController.getAllTeachersModel
-                                        .data!.data![index].image?.length !=
-                                    null
+                                            .data!.data![index].image !=
+                                        null &&
+                                    allTeachersController.getAllTeachersModel
+                                        .data!.data![index].image!.isNotEmpty
                                 ? Image(
                                     image: NetworkImage(
                                         "$mediaUrl${allTeachersController.getAllTeachersModel.data!.data![index].image}"),

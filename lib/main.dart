@@ -35,63 +35,82 @@ const AndroidNotificationChannel channel = AndroidNotificationChannel(
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
+@pragma('vm:entry-point')
+Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  print("BG message: ${message.notification?.title}");
+}
+
 Future<void> main() async {
-  // ALL GOOD
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  Get.put(ApiController());
-  Get.put(GetAllSettingsController());
-  Get.put(GetAllLanguagesController());
-  Get.put(GeneralController());
-  Get.put(LoggedInUserController());
+  // 1. Background handler - FIRST
+  FirebaseMessaging.onBackgroundMessage(firebaseBackgroundHandler);
 
-  Get.put(SearchBarController());
-  Get.put(MainLogic());
-  Get.put(AgoraLogic());
-  Get.put(PusherBeamsController());
+  // 2. Initialize local notifications
+  const AndroidInitializationSettings androidSettings =
+  AndroidInitializationSettings('@mipmap/ic_launcher');
+  const InitializationSettings initSettings =
+  InitializationSettings(android: androidSettings);
+  await flutterLocalNotificationsPlugin.initialize(initSettings);
 
-  //-----load-configurations-from-local-json
-  try {
-    await GlobalConfiguration().loadFromUrl(getAllSettingUrl);
-    log("Working");
-  } catch (e) {
-    log("Error");
-    // something went wrong while fetching the config from the url ... do something
-  }
+  // 3. Create notification channel
+  await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(channel);
 
-  runApp(
-    const MyApp(),
-  );
-
+  // 4. Foreground options
   await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
     alert: true,
     badge: true,
     sound: true,
   );
+
+  // 5. Get & print token
+  String? t = await FirebaseMessaging.instance.getToken();
+  print("FCM TOKEN ---- $t"); // ← Check this in terminal!
+
+  // 6. Foreground message listener
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     RemoteNotification? notification = message.notification;
     AndroidNotification? android = message.notification?.android;
-
     if (notification != null && android != null) {
       flutterLocalNotificationsPlugin.show(
         notification.hashCode,
         notification.title,
         notification.body,
         NotificationDetails(
-          android: AndroidNotificationDetails(channel.id, channel.name,
-              // channel.description,
-              importance: Importance.high,
-              priority: Priority.high,
-              // color: Colors.blue,
-              playSound: true,
-              icon: '@mipmap/ic_launcher'),
+          android: AndroidNotificationDetails(
+            channel.id,
+            channel.name,
+            importance: Importance.high,
+            priority: Priority.high,
+            playSound: true,
+            icon: '@mipmap/ic_launcher',
+          ),
         ),
       );
     }
   });
-}
 
+  // 7. GetX controllers
+  Get.put(ApiController());
+  Get.put(GetAllSettingsController());
+  Get.put(GetAllLanguagesController());
+  Get.put(GeneralController());
+  Get.put(LoggedInUserController());
+  Get.put(SearchBarController());
+  Get.put(MainLogic());
+  Get.put(AgoraLogic());
+  Get.put(PusherBeamsController());
+
+  try {
+    await GlobalConfiguration().loadFromUrl(getAllSettingUrl);
+  } catch (e) {
+    log("Config Error: $e");
+  }
+
+  runApp(const MyApp()); // ← Always last
+}
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 

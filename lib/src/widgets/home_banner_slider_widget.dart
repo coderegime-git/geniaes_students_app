@@ -53,16 +53,26 @@ class _HomePremierTeacherSliderWidgetState
                         teacherImage: ClipRRect(
                           borderRadius: BorderRadius.circular(10),
                           child: allFeaturedTeachersController
-                                      .getAllFeaturedTeachersModel
-                                      .data![index]
-                                      .image
-                                      ?.length !=
-                                  null
-                              ? Image(
-                                  image: NetworkImage(
-                                      "$mediaUrl${allFeaturedTeachersController.getAllFeaturedTeachersModel.data![index].image}"),
-                                  height: 110.h,
-                                )
+                                              .getAllFeaturedTeachersModel
+                                              .data![index]
+                                              .image !=
+                                          null &&
+                                      allFeaturedTeachersController
+                                          .getAllFeaturedTeachersModel
+                                          .data![index]
+                                          .image!
+                                          .isNotEmpty &&
+                                      allFeaturedTeachersController
+                                              .getAllFeaturedTeachersModel
+                                              .data![index]
+                                              .image
+                                              .toString() !=
+                                          'null'
+                                  ? Image(
+                                      image: NetworkImage(
+                                          "$mediaUrl${allFeaturedTeachersController.getAllFeaturedTeachersModel.data![index].image}"),
+                                      height: 110.h,
+                                    )
                               : Image(
                                   image: const AssetImage(
                                       'assets/images/teacher-image.png'),

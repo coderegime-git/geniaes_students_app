@@ -302,7 +302,20 @@ class _AcademyProfileScreenState extends State<AcademyProfileScreen> {
                                                           .academyTeachers![
                                                               index]
                                                           .image !=
-                                                      null
+                                                      null &&
+                                                  generalController
+                                                          .selectedAcademyForView
+                                                          .academyTeachers![
+                                                              index]
+                                                          .image!
+                                                          .isNotEmpty &&
+                                                  generalController
+                                                          .selectedAcademyForView
+                                                          .academyTeachers![
+                                                              index]
+                                                          .image
+                                                          .toString() !=
+                                                      'null'
                                                   ? Image(
                                                       image: NetworkImage(
                                                           "$mediaUrl${generalController.selectedAcademyForView.academyTeachers![index].image}"),
@@ -447,7 +460,12 @@ class _AcademyProfileScreenState extends State<AcademyProfileScreen> {
               Center(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: generalController.selectedAcademyForView.image != null
+                  child: generalController.selectedAcademyForView.image != null &&
+                          generalController
+                              .selectedAcademyForView.image!.isNotEmpty &&
+                          generalController.selectedAcademyForView.image
+                                  .toString() !=
+                              'null'
                       ? Image(
                           image: NetworkImage(
                             "$mediaUrl${generalController.selectedAcademyForView.image}",

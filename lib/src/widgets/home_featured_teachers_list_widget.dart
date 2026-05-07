@@ -69,11 +69,15 @@ class _HomeFeaturedTeachersListWidgetState
                             borderRadius: BorderRadius.circular(10),
                             // ignore: unrelated_type_equality_checks
                             child: allFeaturedTeachersController
+                                            .getAllFeaturedTeachersModel
+                                            .data![index]
+                                            .image !=
+                                        null &&
+                                    allFeaturedTeachersController
                                         .getAllFeaturedTeachersModel
                                         .data![index]
-                                        .image
-                                        ?.length !=
-                                    null
+                                        .image!
+                                        .isNotEmpty
                                 ? Image(
                                     image: NetworkImage(
                                         "$mediaUrl${allFeaturedTeachersController.getAllFeaturedTeachersModel.data![index].image}"),

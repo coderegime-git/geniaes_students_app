@@ -78,12 +78,17 @@ class _HomeBuyServicesListWidgetState extends State<HomeBuyServicesListWidget> {
                                     ClipRRect(
                                       borderRadius: BorderRadius.circular(18),
                                       child: allServicesController
+                                                      .getAllServicesModel
+                                                      .data!
+                                                      .data![index]
+                                                      .image !=
+                                                  null &&
+                                              allServicesController
                                                   .getAllServicesModel
                                                   .data!
                                                   .data![index]
-                                                  .image
-                                                  .toString !=
-                                              'null'
+                                                  .image!
+                                                  .isNotEmpty
                                           ? Image(
                                               image: NetworkImage(
                                                   "$mediaUrl${allServicesController.getAllServicesModel.data!.data![index].image}"),

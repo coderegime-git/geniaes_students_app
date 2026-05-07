@@ -58,6 +58,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "979921148562-ou1f2qe0gui6hntnoesq979e50u6jba3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.geniaes.teachers",
+            "certificate_hash": "c6434d05d7e6d4bddec7b01d76fc294da942f53a"
+          }
+        },
+        {
           "client_id": "979921148562-mt3m78rck7tic1m3jtamvls4ie6lnbbk.apps.googleusercontent.com",
           "client_type": 3
         }

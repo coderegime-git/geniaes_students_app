@@ -90,7 +90,14 @@ class _HomeAcademiesListWidgetState extends State<HomeAcademiesListWidget> {
                                                   .data!
                                                   .data![index]
                                                   .image!
-                                                  .isNotEmpty
+                                                  .isNotEmpty &&
+                                              allAcademiesController
+                                                      .getAllAcademiesModel
+                                                      .data!
+                                                      .data![index]
+                                                      .image
+                                                      .toString() !=
+                                                  'null'
                                           ? Image(
                                               image: NetworkImage(
                                                   "$mediaUrl${allAcademiesController.getAllAcademiesModel.data!.data![index].image}"),

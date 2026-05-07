@@ -63,9 +63,15 @@ class _HomeUpcomingEventsListWidgetState
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(18),
-                                child: allEventsController.getAllEventsModel
-                                            .data!.data![index].image !=
-                                        null
+                                    child: allEventsController.getAllEventsModel
+                                                .data!.data![index].image !=
+                                            null &&
+                                        allEventsController.getAllEventsModel
+                                            .data!.data![index].image!.isNotEmpty &&
+                                        allEventsController.getAllEventsModel
+                                                .data!.data![index].image
+                                                .toString() !=
+                                            'null'
                                     ? Image(
                                         image: NetworkImage(
                                             "$mediaUrl${allEventsController.getAllEventsModel.data!.data![index].image}"),

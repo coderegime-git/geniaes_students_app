@@ -69,9 +69,13 @@ class _HomeTopRatedTeachersListWidgetState
                             child: allTopRatedTeachersController
                                         .getAllTopRatedTeachersModel
                                         .data![index]
-                                        .image
-                                        ?.length !=
-                                    null
+                                        .image !=
+                                    null &&
+                                allTopRatedTeachersController
+                                    .getAllTopRatedTeachersModel
+                                    .data![index]
+                                    .image!
+                                    .isNotEmpty
                                 ? Image(
                                     image: NetworkImage(
                                         "$mediaUrl${allTopRatedTeachersController.getAllTopRatedTeachersModel.data![index].image}"),
