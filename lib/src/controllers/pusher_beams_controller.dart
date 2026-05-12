@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
@@ -24,6 +25,11 @@ class PusherBeamsController extends GetxController {
   }
 
   getSecure() async {
+    final userId =
+        Get.find<GeneralController>().storageBox.read('userID').toString();
+    print("PUSHER USER ID: $userId");
+    log("PUSHER USER ID: $userId");
+    log("PUSHER AUTH URL: ${apiBaseUrl}pusher/beams-auth");
     final BeamsAuthProvider provider = BeamsAuthProvider()
       ..authUrl = '${apiBaseUrl}pusher/beams-auth'
       ..headers = {'Content-Type': 'application/json'}
@@ -33,56 +39,72 @@ class PusherBeamsController extends GetxController {
       }
       ..credentials = 'omit';
 
-    // if (Get.find<GeneralController>().storageBox.hasData('userID')) {
-    await PusherBeams.instance.setDeviceInterests([
-      Get.find<GeneralController>().storageBox.read('userID').toString(),
-    ]);
-    // }
-    if (Get.find<GeneralController>().storageBox.hasData('userID')) {
-      await PusherBeams.instance.setUserId(
+    try {
+      // if (Get.find<GeneralController>().storageBox.hasData('userID')) {
+      await PusherBeams.instance.setDeviceInterests([
         Get.find<GeneralController>().storageBox.read('userID').toString(),
-        provider,
-        (error) => {
-          if (error != null)
-            {
-              print("$error ERROR PUSHER"),
-            }
-          else
-            {
-              print("$error PUSHER2"),
-            },
+      ]);
+      // }
+      if (Get.find<GeneralController>().storageBox.hasData('userID')) {
+        await PusherBeams.instance.setUserId(
+          Get.find<GeneralController>().storageBox.read('userID').toString(),
+          provider,
+          (error) => {
+            if (error != null)
+              {
+                print("$error ERROR PUSHER"),
+              }
+            else
+              {
+                print("$error PUSHER2"),
+              },
 
-          // Success! Do something...
-        },
-      );
+            // Success! Do something...
+          },
+        );
+      }
+    } catch (e) {
+      log("PusherBeams getSecure error: $e");
     }
   }
 
   initPusherBeams() async {
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return;
     log("INITIALIZE PUSHER");
     log("${Get.find<GeneralController>().storageBox.hasData('userID')} USERIDTRUE");
     log("${Get.find<GeneralController>().storageBox.read('userID')} USERIDREAD");
 
-    await getSecure();
-    // Let's see our current interests
-    if (Get.find<GeneralController>()
-        .storageBox
-        .read('userID')
-        .toString()
-        .isNotEmpty) {
-      log(await "${PusherBeams.instance.getDeviceInterests()} DEVICEINTEREST");
+    try {
+      await PusherBeams.instance.start('9466bd1b-2413-4135-badc-36ae30931bac');
+      await PusherBeams.instance.addDeviceInterest("hello");
+    } catch (e) {
+      log("PusherBeams start error: $e");
     }
 
-    // This is not intented to use in web
-    if (!kIsWeb) {
-      await PusherBeams.instance
-          .onInterestChanges((interests) => {print('Interests: $interests')});
+    try {
+      await getSecure();
+      // Let's see our current interests
+      if (Get.find<GeneralController>()
+          .storageBox
+          .read('userID')
+          .toString()
+          .isNotEmpty) {
+        log(await "${PusherBeams.instance.getDeviceInterests()} DEVICEINTEREST");
+      }
 
-      await PusherBeams.instance
-          .onMessageReceivedInTheForeground(_onMessageReceivedInTheForeground);
+      // This is not intented to use in web
+      if (!kIsWeb) {
+        await PusherBeams.instance
+            .onInterestChanges((interests) => {print('Interests: $interests')});
+
+        await PusherBeams.instance.onMessageReceivedInTheForeground(
+            _onMessageReceivedInTheForeground);
+      }
+
+      await _checkForInitialMessage();
+    } catch (e) {
+      log("PusherBeams init error during post-start: $e");
     }
-
-    await _checkForInitialMessage();
     log("INITIALIZE PUSHER END");
   }
 
@@ -106,7 +128,8 @@ class PusherBeamsController extends GetxController {
     log("${appointmentData} APPOINTMENT");
 
     Get.find<GeneralController>().updateChannelForCall(payload["channel_name"]);
-    Get.find<GeneralController>().updateTokenForCall(payload["token"].toString());
+    Get.find<GeneralController>()
+        .updateTokenForCall(payload["token"].toString());
 
     log("CHANNEL NAME: ${payload["channel_name"]}");
 

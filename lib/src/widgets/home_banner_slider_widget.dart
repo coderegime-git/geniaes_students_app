@@ -23,15 +23,42 @@ class _HomePremierTeacherSliderWidgetState
     extends State<HomePremierTeacherSliderWidget> {
   final CarouselSliderController _controller = CarouselSliderController();
 
+  // ✅ Safely builds image URL — avoids null and double-slash issues
+  String? _buildImageUrl(String? imagePath) {
+    if (imagePath == null || imagePath.isEmpty || imagePath == 'null') {
+      return null;
+    }
+    final base = mediaUrl.endsWith('/') ? mediaUrl : '$mediaUrl/';
+    final path = imagePath.startsWith('/') ? imagePath.substring(1) : imagePath;
+    return '$base$path';
+  }
+
+  // ✅ Returns correct image widget — network or asset fallback
+  Widget _buildTeacherImage(String? imagePath) {
+    final url = _buildImageUrl(imagePath);
+    if (url != null) {
+      return Image.network(
+        url,
+        height: 110.h,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          'assets/images/teacher-image.png',
+          height: 110.h,
+          fit: BoxFit.cover,
+        ),
+      );
+    } else {
+      return Image.asset(
+        'assets/images/teacher-image.png',
+        height: 110.h,
+        fit: BoxFit.cover,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GetBuilder<GeneralController>(builder: (generalController) {
-      final double screenWidth = MediaQuery.of(context).size.width;
-
-      // Logic: On wide screens, use a wider ratio to keep height in check.
-      // Phone (~400px width) -> 2.2 ratio -> ~180px height
-      // iPad (~1024px width) -> 5.0 ratio -> ~200px height
-      final double dynamicRatio = screenWidth > 600 ? 5.0 : 2.2;
       return GetBuilder<AllFeaturedTeachersController>(
           builder: (allFeaturedTeachersController) {
         return !allFeaturedTeachersController.featuredTeachersLoader
@@ -44,33 +71,24 @@ class _HomePremierTeacherSliderWidgetState
                 containerWidth: 200.w,
               )
             : ClipRect(
-              child: CarouselSlider(
+                child: CarouselSlider(
                   items: List.generate(
                     allFeaturedTeachersController
                         .getAllFeaturedTeachersModel.data!.length,
                     (index) {
+                      final teacher = allFeaturedTeachersController
+                          .getAllFeaturedTeachersModel.data![index];
+
                       return PremierTeacherCardWidget(
-                        teacherImage: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: allFeaturedTeachersController
-                                      .getAllFeaturedTeachersModel
-                                      .data![index]
-                                      .image
-                                      ?.length !=
-                                  null
-                              ? Image(
-                                  image: NetworkImage(
-                                      "$mediaUrl${allFeaturedTeachersController.getAllFeaturedTeachersModel.data![index].image}"),
-                                  height: 110.h,
-                                )
-                              : Image(
-                                  image: const AssetImage(
-                                      'assets/images/teacher-image.png'),
-                                  height: 110.h,
-                                ),
+                        // ✅ Fixed: constrained width + proper null/URL handling
+                        teacherImage: SizedBox(
+                          width: 100.w,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: _buildTeacherImage(teacher.image),
+                          ),
                         ),
-                        teacherName:
-                            "${allFeaturedTeachersController.getAllFeaturedTeachersModel.data![index].name}",
+                        teacherName: teacher.name ?? '',
                         categories: SizedBox(
                           height: 16.h,
                           child: ListView(
@@ -78,14 +96,10 @@ class _HomePremierTeacherSliderWidgetState
                             scrollDirection: Axis.horizontal,
                             physics: const NeverScrollableScrollPhysics(),
                             children: List.generate(
-                              allFeaturedTeachersController
-                                  .getAllFeaturedTeachersModel
-                                  .data![index]
-                                  .teacherCategories!
-                                  .length,
+                              teacher.teacherCategories?.length ?? 0,
                               (index1) {
                                 return Text(
-                                  "${allFeaturedTeachersController.getAllFeaturedTeachersModel.data![index].teacherCategories![index1].name} | ",
+                                  "${teacher.teacherCategories![index1].name} | ",
                                   textAlign: TextAlign.start,
                                   style: AppTextStyles.bodyTextStyle7,
                                 );
@@ -93,16 +107,11 @@ class _HomePremierTeacherSliderWidgetState
                             ),
                           ),
                         ),
-                        teacherRating:
-                            "(${allFeaturedTeachersController.getAllFeaturedTeachersModel.data![index].rating})",
-                        initRating: allFeaturedTeachersController
-                            .getAllFeaturedTeachersModel.data![index].rating!
-                            .toDouble(),
+                        teacherRating: "(${teacher.rating ?? 0})",
+                        initRating: (teacher.rating ?? 0).toDouble(),
                         onTap: () {
-                          generalController.updateSelectedTeacherForView(
-                              allFeaturedTeachersController
-                                  .getAllFeaturedTeachersModel.data![index]);
-              
+                          generalController
+                              .updateSelectedTeacherForView(teacher);
                           Get.toNamed(PageRoutes.teacherProfileScreen);
                         },
                       );
@@ -110,18 +119,18 @@ class _HomePremierTeacherSliderWidgetState
                   ),
                   carouselController: _controller,
                   options: CarouselOptions(
-                      autoPlay: false,
-                      height: 200.h, // explicit height instead of aspectRatio
-                      enlargeCenterPage: true,
-                      enlargeFactor: 0.2, // reduce from 0.5 to prevent overflow
-                      viewportFraction: 0.85,
-                      enlargeStrategy:
-                          CenterPageEnlargeStrategy.scale, // use height strategy
-                      onPageChanged: (index, reason) {
-                        setState(() {});
-                      }),
+                    autoPlay: false,
+                    height: 200.h,
+                    enlargeCenterPage: true,
+                    enlargeFactor: 0.2,
+                    viewportFraction: 0.85,
+                    enlargeStrategy: CenterPageEnlargeStrategy.scale,
+                    onPageChanged: (index, reason) {
+                      setState(() {});
+                    },
+                  ),
                 ),
-            );
+              );
       });
     });
   }

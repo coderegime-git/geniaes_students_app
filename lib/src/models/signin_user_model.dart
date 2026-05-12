@@ -351,7 +351,8 @@ class LoginInfo {
     _name = json['name'];
     _firstName = json['first_name'];
     _lastName = json['last_name'];
-    _description = json['description'];
+    final rawDescription = json['description'];
+    _description = (rawDescription is String) ? rawDescription : null;
     _addressLine1 = json['address_line_1'];
     _addressLine2 = json['address_line_2'];
     _userName = json['user_name'];

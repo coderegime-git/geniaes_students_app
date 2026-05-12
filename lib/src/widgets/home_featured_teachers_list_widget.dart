@@ -28,6 +28,39 @@ class _HomeFeaturedTeachersListWidgetState
   final logic = Get.put(AllFeaturedTeachersController());
   final allTeacherslogic = Get.put(AllTeachersController());
 
+  // ✅ Safely builds image URL — avoids null and double-slash issues
+  String? _buildImageUrl(String? imagePath) {
+    if (imagePath == null || imagePath.isEmpty || imagePath == 'null') {
+      return null;
+    }
+    final base = mediaUrl.endsWith('/') ? mediaUrl : '$mediaUrl/';
+    final path = imagePath.startsWith('/') ? imagePath.substring(1) : imagePath;
+    return '$base$path';
+  }
+
+  // ✅ Returns correct image widget — network or asset fallback
+  Widget _buildTeacherImage(String? imagePath) {
+    final url = _buildImageUrl(imagePath);
+    if (url != null) {
+      return Image.network(
+        url,
+        height: 150.h,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          'assets/images/teacher-image.png',
+          height: 150.h,
+          fit: BoxFit.cover,
+        ),
+      );
+    } else {
+      return Image.asset(
+        'assets/images/teacher-image.png',
+        height: 150.h,
+        fit: BoxFit.cover,
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -64,165 +97,26 @@ class _HomeFeaturedTeachersListWidgetState
                           .getAllFeaturedTeachersModel.data!.length,
                       padding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
                       itemBuilder: (context, index) {
+                        final teacher = allFeaturedTeachersController
+                            .getAllFeaturedTeachersModel.data![index];
+
                         return HomeTeacherCardWidget(
+                          // ✅ Fixed: proper null check + safe URL + error fallback
                           image: ClipRRect(
                             borderRadius: BorderRadius.circular(10),
-                            // ignore: unrelated_type_equality_checks
-                            child: allFeaturedTeachersController
-                                        .getAllFeaturedTeachersModel
-                                        .data![index]
-                                        .image
-                                        ?.length !=
-                                    null
-                                ? Image(
-                                    image: NetworkImage(
-                                        "$mediaUrl${allFeaturedTeachersController.getAllFeaturedTeachersModel.data![index].image}"),
-                                    height: 150.h,
-                                  )
-                                : Image(
-                                    image: const AssetImage(
-                                        'assets/images/teacher-image.png'),
-                                    height: 150.h,
-                                  ),
+                            child: _buildTeacherImage(teacher.image),
                           ),
-                          name: allFeaturedTeachersController
-                              .getAllFeaturedTeachersModel.data![index].name
-                              .toString(),
+                          name: teacher.name ?? '',
                           categoryName: 'Math',
                           premiumImage: Image.asset(
                             "assets/icons/premium_star.png",
                           ),
                           onSearchTap: () {
-                            generalController.updateSelectedTeacherForView(
-                                allFeaturedTeachersController
-                                    .getAllFeaturedTeachersModel.data![index]);
-
+                            generalController
+                                .updateSelectedTeacherForView(teacher);
                             Get.toNamed(PageRoutes.teacherProfileScreen);
                           },
                         );
-                        // return Container(
-                        //   padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
-                        //   decoration: BoxDecoration(
-                        //     border: Border.all(color: AppColors.primaryColor),
-                        //     borderRadius: BorderRadius.circular(18),
-                        //   ),
-                        //   child: Row(
-                        //     mainAxisSize: MainAxisSize.min,
-                        //     children: [
-                        //       ClipRRect(
-                        //         borderRadius: BorderRadius.circular(18),
-                        //         // ignore: unrelated_type_equality_checks
-                        //         child: allFeaturedTeachersController
-                        //                     .getAllFeaturedTeachersModel
-                        //                     .data![index]
-                        //                     .image
-                        //                     ?.length !=
-                        //                 null
-                        //             ? Image(
-                        //                 image: NetworkImage(
-                        //                     "$mediaUrl${allFeaturedTeachersController.getAllFeaturedTeachersModel.data![index].image}"),
-                        //               )
-                        //             : const Image(
-                        //                 image: AssetImage(
-                        //                     'assets/images/teacher-image.png'),
-                        //               ),
-                        //       ),
-                        //       Padding(
-                        //         padding:
-                        //             const EdgeInsets.fromLTRB(14, 0, 14, 0),
-                        //         child: Column(
-                        //           crossAxisAlignment: CrossAxisAlignment.start,
-                        //           mainAxisAlignment: MainAxisAlignment.center,
-                        //           children: [
-                        //             const SizedBox(
-                        //               height: 10,
-                        //             ),
-                        //             Text(
-                        //               // "Jhon Doe",
-                        //               allFeaturedTeachersController
-                        //                   .getAllFeaturedTeachersModel
-                        //                   .data![index]
-                        //                   .name
-                        //                   .toString(),
-                        //               textAlign: TextAlign.start,
-                        //               style: AppTextStyles.bodyTextStyle2,
-                        //             ),
-                        //             const SizedBox(
-                        //               height: 10,
-                        //             ),
-                        //             SizedBox(
-                        //               height: 15.h,
-                        //               width: 120.w,
-                        //               child: ListView(
-                        //                 shrinkWrap: true,
-                        //                 scrollDirection: Axis.horizontal,
-                        //                 physics:
-                        //                     const NeverScrollableScrollPhysics(),
-                        //                 children: List.generate(
-                        //                     allFeaturedTeachersController
-                        //                         .getAllFeaturedTeachersModel
-                        //                         .data![index]
-                        //                         .teacherCategories!
-                        //                         .length, (index1) {
-                        //                   return Text(
-                        //                     "${allFeaturedTeachersController.getAllFeaturedTeachersModel.data![index].teacherCategories![index1].name} | ",
-                        //                     textAlign: TextAlign.start,
-                        //                     style: AppTextStyles.bodyTextStyle3,
-                        //                   );
-                        //                 }),
-                        //               ),
-                        //             ),
-                        //             const SizedBox(
-                        //               height: 10,
-                        //             ),
-                        //             SizedBox(
-                        //               width: 120.w,
-                        //               child: Text(
-                        //                 allFeaturedTeachersController
-                        //                             .getAllFeaturedTeachersModel
-                        //                             .data![index]
-                        //                             .description !=
-                        //                         null
-                        //                     ? allFeaturedTeachersController
-                        //                         .getAllFeaturedTeachersModel
-                        //                         .data![index]
-                        //                         .description
-                        //                         .toString()
-                        //                     : "",
-                        //                 textAlign: TextAlign.start,
-                        //                 softWrap: true,
-                        //                 overflow: TextOverflow.ellipsis,
-                        //                 maxLines: 2,
-                        //                 style: AppTextStyles.bodyTextStyle4,
-                        //               ),
-                        //             ),
-                        //             Padding(
-                        //               padding: const EdgeInsets.fromLTRB(
-                        //                   0, 12, 0, 8),
-                        //               child: ButtonWidgetOne(
-                        //                 buttonText: 'Book Now',
-                        //                 onTap: () {
-                        //                   generalController
-                        //                       .updateSelectedTeacherForView(
-                        //                           allFeaturedTeachersController
-                        //                               .getAllFeaturedTeachersModel
-                        //                               .data![index]);
-
-                        //                   Get.toNamed(
-                        //                       PageRoutes.teacherProfileScreen);
-                        //                 },
-                        //                 buttonTextStyle:
-                        //                     AppTextStyles.buttonTextStyle6,
-                        //                 borderRadius: 5,
-                        //                 buttonColor: AppColors.gradientOne,
-                        //               ),
-                        //             ),
-                        //           ],
-                        //         ),
-                        //       )
-                        //     ],
-                        //   ),
-                        // );
                       },
                       separatorBuilder: (context, position) {
                         return const SizedBox(width: 18);

@@ -61,6 +61,19 @@ class _State extends State<JoinChannelAudio> {
   }
 
   Future<void> _initEngine() async {
+    // Wait for Agora App ID to be loaded if it's currently empty
+    int retryCount = 0;
+    while (config.agoraAppId.isEmpty && retryCount < 10 && !_disposed) {
+      log('Student JoinChannelAudio: Agora App ID is empty, waiting... (Attempt ${retryCount + 1})');
+      await Future.delayed(const Duration(milliseconds: 500));
+      retryCount++;
+    }
+
+    if (config.agoraAppId.isEmpty) {
+      log('Student JoinChannelAudio: Agora App ID is still empty after retries. Initialization aborted.');
+      return;
+    }
+
     _engine = createAgoraRtcEngineEx();
     await _engine.initialize(RtcEngineContext(
       appId: config.agoraAppId,
@@ -106,13 +119,15 @@ class _State extends State<JoinChannelAudio> {
     }
 
     final gc = Get.find<GeneralController>();
+    log('Student JoinChannelAudio: joining channel=${gc.channelForCall} uid=${gc.callerType}');
+
     await _engine
         .joinChannel(
           token: gc.tokenForCall ?? '',
           channelId: gc.channelForCall!,
           uid: gc.callerType,
           options: const ChannelMediaOptions(
-            channelProfile: ChannelProfileType.channelProfileCommunication,
+            // channelProfile removed – already set in RtcEngineContext
             clientRoleType: ClientRoleType.clientRoleBroadcaster,
             publishMicrophoneTrack: true,
             publishCameraTrack: false,

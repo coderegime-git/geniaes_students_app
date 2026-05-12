@@ -6,7 +6,7 @@ class AppConfigs {
 
   static String baseUrl = "https://www.geniaes.com/";
   static String apiBaseUrl = "https://www.geniaes.com/api/v1/";
-  static String mediaUrl = "https://www.geniaes.com";
+  static String mediaUrl = "https://www.geniaes.com/";
 
   static dynamic agoraAppId = Get.find<GetAllSettingsController>()
           .getAllSettingsModel

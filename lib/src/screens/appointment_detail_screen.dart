@@ -48,10 +48,11 @@ class AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
             titleText: LanguageConstant.appointmentDetail.tr,
           ),
         ),
-        body: Padding(
-          padding: EdgeInsets.fromLTRB(18.w, 0, 18.w, 0),
-          child: Column(
-            children: [
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(18.w, 0, 18.w, 0),
+            child: Column(
+              children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -65,7 +66,7 @@ class AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                                 null
                             ? Image(
                                 image: NetworkImage(
-                                    "$mediaUrl${generalController.selectedAppointmentHistoryForView.teacherImage!}"),
+                                    "${mediaUrl}${generalController.selectedAppointmentHistoryForView.teacherImage ?? ""}"),
                                 height: 110.h,
                               )
                             : Image(
@@ -115,17 +116,17 @@ class AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                     decoration: BoxDecoration(
                         color: generalController
                                     .selectedAppointmentHistoryForView
-                                    .appointmentStatusCode! ==
+                                    .appointmentStatusCode ==
                                 1
                             ? AppColors.beigeColor
                             : generalController
                                         .selectedAppointmentHistoryForView
-                                        .appointmentStatusCode! ==
+                                        .appointmentStatusCode ==
                                     5
                                 ? AppColors.green.withOpacity(0.5)
                                 : generalController
                                             .selectedAppointmentHistoryForView
-                                            .appointmentStatusCode! ==
+                                            .appointmentStatusCode ==
                                         2
                                     ? AppColors.orange.withOpacity(0.7)
                                     : AppColors.primaryColor,
@@ -261,8 +262,8 @@ class AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                           Text(
                             // "Appointment Type",
                             Get.find<GetAllSettingsController>()
-                                .getDisplayAmount(int.parse(generalController
-                                    .selectedAppointmentHistoryForView.fee
+                                .getDisplayAmount(int.parse((generalController
+                                    .selectedAppointmentHistoryForView.fee ?? 0)
                                     .toString())),
                             style: AppTextStyles.bodyTextStyle11,
                           ),
@@ -384,13 +385,14 @@ class AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                                   final apptId = generalController
                                       .selectedAppointmentHistoryForView.id;
                                   final channel = "appt_$apptId";
-                                  generalController
-                                      .updateChannelForCall(channel);
+                                  // Only override channel if not already populated from FCM notification
+                                  if (generalController.channelForCall == null ||
+                                      generalController.channelForCall!.isEmpty) {
+                                    generalController.updateChannelForCall(channel);
+                                  }
+                                  // Student always joins as uid=2
                                   generalController.updateCallerType(2);
-
-                                  // Dummy token for testing
-                                  String dummyToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzIiwianRpIjoiNjI2OTE3NmQwYzRiOTgzZDFiNzUxZTA1MTcxYzkyN2FiNjE4OTNjNGI3ZTk4YzBhM2U5Mjc4OGNiZDVhYThhZjZjNjA2YjEwNzhkY2U5ZWIiLCJpYXQiOjE3NzY4MzkzMjEuMzE0MDE0LCJuYmYiOjE3NzY4MzkzMjEuMzE0MDE3LCJleHAiOjE4MDgzNzUzMjEuMjk5MTk1LCJzdWIiOiIzMzAiLCJzY29wZXMiOltdfQ.myfmSMF9ZVnGbwGquvCvcA0eY0iaELcTaqF7zUkq-_CXTT3BtvRc3MKzNn-B7emCB6yNcJzyNXi-4uonxzp0usrblJi4MqMrUoRDf2oPeIlj-GYvHlbQR9urboojYWDcdflyEYABR3zPIUF7i0SRBixAnbRnh6tYgB0vXQQ9OQiydhTQ7YjIt8FncbjS3sqczEa3oLD5hZP3UxSDTo5YKkj-YAuRkpQ5brySq7j4NFrQuxnXJfscYFOu2HBZvbZxKkb0SDqu0RMTgxjrvE-kL5zq4MrexVPj9UR-f0OYrbiCVKzDL9BpFKOkVOFbsk7-tKYYUJCzXnOapTcx1J4ll_2PTl5Sppjrd5WjcDowkEpxRl6aqcpD0XEuWgp0OY_G83Owmvkhpz4_s_AQrlJTUzPiX_XmhkBmYLV8BOZ5xVZycmKnl_o9vb6NF1hwub3iK1HhVp06HkJA3sAkKkVTNPEBcSKxKQ67gHsy04RMl5TIKYVAhhSsJiT_3I7ZumPNE_rF0fybzuRwSRGJBJJQkMUae72QoT1XU4GiJW960f0DMwjMeJZ5XHI5u40yhON-A3ZrwlfP20o3ynYfBShHhGA13_2E1_7x4RWIwhOp9gYOn9gNsv4rdPjEQKwppj90Y5Wc35dNVZGYTA7e185IJcXK7pX6KaYvvA3ada4_ew8";
-                                  generalController.updateTokenForCall(dummyToken);
+                                  // tokenForCall is already set by the FCM notification handler
                                   Get.toNamed(PageRoutes.videoCallScreen);
                                 },
                                 buttonText: LanguageConstant.videoCall.tr,
@@ -406,13 +408,14 @@ class AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                                       final apptId = generalController
                                           .selectedAppointmentHistoryForView.id;
                                       final channel = "appt_$apptId";
-                                      generalController
-                                          .updateChannelForCall(channel);
+                                      // Only override channel if not already populated from FCM notification
+                                      if (generalController.channelForCall == null ||
+                                          generalController.channelForCall!.isEmpty) {
+                                        generalController.updateChannelForCall(channel);
+                                      }
+                                      // Student always joins as uid=2
                                       generalController.updateCallerType(2);
-
-                                      // Dummy token for testing
-                                      String dummyToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzIiwianRpIjoiNjI2OTE3NmQwYzRiOTgzZDFiNzUxZTA1MTcxYzkyN2FiNjE4OTNjNGI3ZTk4YzBhM2U5Mjc4OGNiZDVhYThhZjZjNjA2YjEwNzhkY2U5ZWIiLCJpYXQiOjE3NzY4MzkzMjEuMzE0MDE0LCJuYmYiOjE3NzY4MzkzMjEuMzE0MDE3LCJleHAiOjE4MDgzNzUzMjEuMjk5MTk1LCJzdWIiOiIzMzAiLCJzY29wZXMiOltdfQ.myfmSMF9ZVnGbwGquvCvcA0eY0iaELcTaqF7zUkq-_CXTT3BtvRc3MKzNn-B7emCB6yNcJzyNXi-4uonxzp0usrblJi4MqMrUoRDf2oPeIlj-GYvHlbQR9urboojYWDcdflyEYABR3zPIUF7i0SRBixAnbRnh6tYgB0vXQQ9OQiydhTQ7YjIt8FncbjS3sqczEa3oLD5hZP3UxSDTo5YKkj-YAuRkpQ5brySq7j4NFrQuxnXJfscYFOu2HBZvbZxKkb0SDqu0RMTgxjrvE-kL5zq4MrexVPj9UR-f0OYrbiCVKzDL9BpFKOkVOFbsk7-tKYYUJCzXnOapTcx1J4ll_2PTl5Sppjrd5WjcDowkEpxRl6aqcpD0XEuWgp0OY_G83Owmvkhpz4_s_AQrlJTUzPiX_XmhkBmYLV8BOZ5xVZycmKnl_o9vb6NF1hwub3iK1HhVp06HkJA3sAkKkVTNPEBcSKxKQ67gHsy04RMl5TIKYVAhhSsJiT_3I7ZumPNE_rF0fybzuRwSRGJBJJQkMUae72QoT1XU4GiJW960f0DMwjMeJZ5XHI5u40yhON-A3ZrwlfP20o3ynYfBShHhGA13_2E1_7x4RWIwhOp9gYOn9gNsv4rdPjEQKwppj90Y5Wc35dNVZGYTA7e185IJcXK7pX6KaYvvA3ada4_ew8";
-                                      generalController.updateTokenForCall(dummyToken);
+                                      // tokenForCall is already set by the FCM notification handler
                                       Get.toNamed(PageRoutes.audioCallScreen);
                                     },
                                     buttonText: LanguageConstant.audioCall.tr,
@@ -436,9 +439,10 @@ class AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                                     : Container(),
                       ],
                     )
-                  : Container(),
+                : Container(),
             ],
           ),
+        ),
         ),
       );
     });

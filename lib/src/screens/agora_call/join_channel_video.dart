@@ -23,9 +23,10 @@ class JoinChannelVideo extends StatefulWidget {
   State<StatefulWidget> createState() => _State();
 }
 
-class _State extends State<JoinChannelVideo> {
+class _State extends State<JoinChannelVideo> with WidgetsBindingObserver {
   late final RtcEngine _engine;
 
+  bool _engineReady = false; // ← Guard: only render AgoraVideoView when true
   bool isJoined = false;
   int? remoteUid;
   int? callEnd = 0;
@@ -39,6 +40,7 @@ class _State extends State<JoinChannelVideo> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     log('Student JoinChannelVideo: initState');
 
     _timer = Timer.periodic(const Duration(seconds: 2), (_) {
@@ -51,21 +53,54 @@ class _State extends State<JoinChannelVideo> {
   @override
   void dispose() {
     _disposed = true;
+    WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
     _engine.leaveChannel();
     _engine.release();
     super.dispose();
   }
 
+  /// Restart preview when app comes back to foreground (fixes black SurfaceView
+  /// after permission dialog or app-switch destroys the surface texture).
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!_engineReady || _disposed) return;
+    if (state == AppLifecycleState.resumed) {
+      log('Student JoinChannelVideo: app resumed – restarting preview');
+      _engine.enableLocalVideo(true);
+      _engine.startPreview();
+    }
+  }
+
   // ─── Engine setup ─────────────────────────────────────────────────────────
 
   Future<void> _initAndJoin() async {
     await _initEngine();
-    await Future.delayed(const Duration(milliseconds: 1500));
+    // Small delay to let the engine settle.
+    await Future.delayed(const Duration(milliseconds: 500));
+    if (!_disposed) {
+      // Signal UI to mount AgoraVideoView so its SurfaceTexture is created.
+      setState(() => _engineReady = true);
+      // One frame for the texture to attach before preview starts.
+      await Future.delayed(const Duration(milliseconds: 300));
+    }
     if (!_disposed) await _joinChannel();
   }
 
   Future<void> _initEngine() async {
+    // Wait for Agora App ID to be loaded if it's currently empty
+    int retryCount = 0;
+    while (config.agoraAppId.isEmpty && retryCount < 10 && !_disposed) {
+      log('Student JoinChannelVideo: Agora App ID is empty, waiting... (Attempt ${retryCount + 1})');
+      await Future.delayed(const Duration(milliseconds: 500));
+      retryCount++;
+    }
+
+    if (config.agoraAppId.isEmpty) {
+      log('Student JoinChannelVideo: Agora App ID is still empty after retries. Initialization aborted.');
+      return;
+    }
+
     _engine = createAgoraRtcEngineEx();
     await _engine.initialize(RtcEngineContext(
       appId: config.agoraAppId,
@@ -75,11 +110,19 @@ class _State extends State<JoinChannelVideo> {
     _addListeners(); // Once only.
 
     await _engine.enableVideo();
-    await _engine.startPreview();
     await _engine.enableLocalVideo(true);
     await _engine.setVideoEncoderConfiguration(
-      const VideoEncoderConfiguration(),
+      const VideoEncoderConfiguration(
+        dimensions: VideoDimensions(width: 640, height: 360),
+        frameRate: 15,
+        bitrate: 800,
+        orientationMode: OrientationMode.orientationModeAdaptive,
+      ),
     );
+
+    // NOTE: startPreview() is deferred until after _engineReady = true so
+    // the AgoraVideoView SurfaceTexture exists before preview tries to bind.
+
     log('Student JoinChannelVideo: engine ready');
   }
 
@@ -88,7 +131,11 @@ class _State extends State<JoinChannelVideo> {
     _engine.registerEventHandler(RtcEngineEventHandler(
       onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
         log('Student: joined channel ${connection.channelId}');
-        if (!_disposed) setState(() => isJoined = true);
+        if (!_disposed) {
+          setState(() => isJoined = true);
+          // Start local preview after join so SurfaceTexture is guaranteed ready.
+          _engine.startPreview();
+        }
       },
       onUserJoined: (RtcConnection connection, int uid, int elapsed) {
         log('Student: remote user $uid joined');
@@ -118,21 +165,31 @@ class _State extends State<JoinChannelVideo> {
           });
         }
       },
+      onLocalVideoStateChanged: (VideoSourceType source,
+          LocalVideoStreamState state, LocalVideoStreamReason error) {
+        log('Student JoinChannelVideo: localVideoState source=$source state=$state error=$error');
+      },
+      onCameraReady: () {
+        log('Student JoinChannelVideo: camera ready');
+      },
     ));
   }
 
   Future<void> _joinChannel() async {
     if (defaultTargetPlatform == TargetPlatform.android) {
-      await [Permission.microphone, Permission.camera].request();
+      final statuses =
+          await [Permission.microphone, Permission.camera].request();
+      log('Student JoinChannelVideo: permissions → $statuses');
     }
 
     final gc = Get.find<GeneralController>();
+    log('Student JoinChannelVideo: joining channel=${gc.channelForCall} uid=${gc.callerType}');
+
     await _engine.joinChannel(
-      token: gc.tokenForCall ?? '',   // null-safe: '' = no-token mode
+      token: gc.tokenForCall ?? '',
       channelId: gc.channelForCall!,
       uid: gc.callerType,
       options: const ChannelMediaOptions(
-        channelProfile: ChannelProfileType.channelProfileCommunication,
         clientRoleType: ClientRoleType.clientRoleBroadcaster,
         publishCameraTrack: true,
         publishMicrophoneTrack: true,
@@ -175,24 +232,25 @@ class _State extends State<JoinChannelVideo> {
             // Full-screen remote video or waiting view
             Positioned.fill(child: _remoteVideoOrWaiting()),
 
-            // Local PiP (top-right)
-            Positioned(
-              top: 50.h,
-              right: 16.w,
-              child: SizedBox(
-                width: 100.w,
-                height: 150.h,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8.r),
-                  child: AgoraVideoView(
-                    controller: VideoViewController(
-                      rtcEngine: _engine,
-                      canvas: const VideoCanvas(uid: 0),
+            // Local PiP (top-right) — only after engine is ready
+            if (_engineReady)
+              Positioned(
+                top: 50.h,
+                right: 16.w,
+                child: SizedBox(
+                  width: 120.w,
+                  height: 160.h,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8.r),
+                    child: AgoraVideoView(
+                      controller: VideoViewController(
+                        rtcEngine: _engine,
+                        canvas: const VideoCanvas(uid: 0),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
 
             // Control toolbar (bottom)
             Positioned(
@@ -208,11 +266,11 @@ class _State extends State<JoinChannelVideo> {
   }
 
   Widget _remoteVideoOrWaiting() {
-    if (remoteUid != null) {
+    if (_engineReady && remoteUid != null) {
       return AgoraVideoView(
         controller: VideoViewController.remote(
           rtcEngine: _engine,
-          canvas: VideoCanvas(uid: remoteUid),
+          canvas: VideoCanvas(uid: remoteUid!),
           connection: RtcConnection(
               channelId: Get.find<GeneralController>().channelForCall),
         ),
@@ -252,13 +310,19 @@ class _State extends State<JoinChannelVideo> {
             ),
             SizedBox(height: 8.h),
             Text(
-              isJoined ? 'Waiting for teacher…' : 'Connecting…',
+              _engineReady
+                  ? (isJoined ? 'Waiting for teacher…' : 'Connecting…')
+                  : 'Initialising camera…',
               style: TextStyle(
                 fontSize: 16.sp,
                 fontFamily: AppFont.primaryFontFamily,
                 color: Colors.white70,
               ),
             ),
+            if (!_engineReady) ...[
+              SizedBox(height: 16.h),
+              const CircularProgressIndicator(color: Colors.white54),
+            ],
           ],
         ),
       ),

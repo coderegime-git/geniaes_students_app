@@ -68,8 +68,7 @@ dependencies:
   flutter_svg: ^2.0.9
   win32: ^5.7.0
   global_configuration: 
-  pusher_beams:
-     path: lib/push-notifications-flutter/packages/pusher_beams
+  pusher_beams: ^1.1.2
 #  cached_network_image: ^3.3.1
 
 
