@@ -83,6 +83,9 @@ class _State extends State<JoinChannelVideo> with WidgetsBindingObserver {
       setState(() => _engineReady = true);
       // One frame for the texture to attach before preview starts.
       await Future.delayed(const Duration(milliseconds: 300));
+
+      // Start preview BEFORE join so local camera is visible immediately
+      await _engine.startPreview();
     }
     if (!_disposed) await _joinChannel();
   }
@@ -109,6 +112,7 @@ class _State extends State<JoinChannelVideo> with WidgetsBindingObserver {
 
     _addListeners(); // Once only.
 
+    await _engine.enableAudio();
     await _engine.enableVideo();
     await _engine.enableLocalVideo(true);
     await _engine.setVideoEncoderConfiguration(
@@ -133,8 +137,6 @@ class _State extends State<JoinChannelVideo> with WidgetsBindingObserver {
         log('Student: joined channel ${connection.channelId}');
         if (!_disposed) {
           setState(() => isJoined = true);
-          // Start local preview after join so SurfaceTexture is guaranteed ready.
-          _engine.startPreview();
         }
       },
       onUserJoined: (RtcConnection connection, int uid, int elapsed) {
@@ -183,12 +185,14 @@ class _State extends State<JoinChannelVideo> with WidgetsBindingObserver {
     }
 
     final gc = Get.find<GeneralController>();
-    log('Student JoinChannelVideo: joining channel=${gc.channelForCall} uid=${gc.callerType}');
+    // Student joins as UID 2 (Teacher is 1) to avoid UID collision.
+    final uid = gc.callerType == 1 ? 2 : gc.callerType;
+    log('Student JoinChannelVideo: joining channel=${gc.channelForCall} uid=$uid');
 
     await _engine.joinChannel(
       token: gc.tokenForCall ?? '',
       channelId: gc.channelForCall!,
-      uid: gc.callerType,
+      uid: uid,
       options: const ChannelMediaOptions(
         clientRoleType: ClientRoleType.clientRoleBroadcaster,
         publishCameraTrack: true,

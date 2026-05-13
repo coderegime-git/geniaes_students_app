@@ -119,13 +119,15 @@ class _State extends State<JoinChannelAudio> {
     }
 
     final gc = Get.find<GeneralController>();
-    log('Student JoinChannelAudio: joining channel=${gc.channelForCall} uid=${gc.callerType}');
+    // Student joins as UID 2 (Teacher is 1) to avoid UID collision.
+    final uid = gc.callerType == 1 ? 2 : gc.callerType;
+    log('Student JoinChannelAudio: joining channel=${gc.channelForCall} uid=$uid');
 
     await _engine
         .joinChannel(
           token: gc.tokenForCall ?? '',
           channelId: gc.channelForCall!,
-          uid: gc.callerType,
+          uid: uid,
           options: const ChannelMediaOptions(
             // channelProfile removed – already set in RtcEngineContext
             clientRoleType: ClientRoleType.clientRoleBroadcaster,
