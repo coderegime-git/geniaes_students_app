@@ -12,6 +12,7 @@ import '../controllers/all_settings_controller.dart';
 import '../controllers/general_controller.dart';
 import '../widgets/rating_dialog.dart';
 import '../repositories/add_appointment_rating_repo.dart';
+import '../repositories/appointment_status_update_repo.dart';
 import 'dart:developer';
 import '../controllers/live_chat_controller.dart';
 import '../routes.dart';
