@@ -110,6 +110,12 @@ class PusherBeamsController extends GetxController {
 
   void _onMessageReceivedInTheForeground(Map<Object?, Object?> data) {
     dynamic allData = data["data"];
+
+    if (allData == null || allData["payload"] == null) {
+      log("Pusher Beams Message Received without call payload");
+      return;
+    }
+
     Map<String, dynamic> payload = jsonDecode(allData["payload"]);
     dynamic appointmentData = payload["appointment"];
 

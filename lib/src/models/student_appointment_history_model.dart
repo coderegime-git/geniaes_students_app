@@ -343,6 +343,9 @@ class StudentAppointmentHistoryModel {
     List<Messages>? messages,
     String? createdAt,
     String? updatedAt,
+    num? isRating,
+    num? rating,
+    String? comment,
   }) {
     _id = id;
     _studentId = studentId;
@@ -369,6 +372,9 @@ class StudentAppointmentHistoryModel {
     _messages = messages;
     _createdAt = createdAt;
     _updatedAt = updatedAt;
+    _isRating = isRating;
+    _rating = rating;
+    _comment = comment;
   }
 
   StudentAppointmentHistoryModel.fromJson(dynamic json) {
@@ -402,6 +408,9 @@ class StudentAppointmentHistoryModel {
     }
     _createdAt = json['created_at'];
     _updatedAt = json['updated_at'];
+    _isRating = json['is_rating'];
+    _rating = json['rating'];
+    _comment = json['comment'];
   }
   num? _id;
   num? _studentId;
@@ -428,6 +437,9 @@ class StudentAppointmentHistoryModel {
   List<Messages>? _messages;
   String? _createdAt;
   String? _updatedAt;
+  num? _isRating;
+  num? _rating;
+  String? _comment;
   StudentAppointmentHistoryModel copyWith({
     num? id,
     num? studentId,
@@ -454,6 +466,9 @@ class StudentAppointmentHistoryModel {
     List<Messages>? messages,
     String? createdAt,
     String? updatedAt,
+    num? isRating,
+    num? rating,
+    String? comment,
   }) =>
       StudentAppointmentHistoryModel(
         id: id ?? _id,
@@ -481,6 +496,9 @@ class StudentAppointmentHistoryModel {
         messages: messages ?? _messages,
         createdAt: createdAt ?? _createdAt,
         updatedAt: updatedAt ?? _updatedAt,
+        isRating: isRating ?? _isRating,
+        rating: rating ?? _rating,
+        comment: comment ?? _comment,
       );
   num? get id => _id;
   num? get studentId => _studentId;
@@ -507,6 +525,9 @@ class StudentAppointmentHistoryModel {
   List<Messages>? get messages => _messages;
   String? get createdAt => _createdAt;
   String? get updatedAt => _updatedAt;
+  num? get isRating => _isRating;
+  num? get rating => _rating;
+  String? get comment => _comment;
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
@@ -537,6 +558,9 @@ class StudentAppointmentHistoryModel {
     }
     map['created_at'] = _createdAt;
     map['updated_at'] = _updatedAt;
+    map['is_rating'] = _isRating;
+    map['rating'] = _rating;
+    map['comment'] = _comment;
     return map;
   }
 }

@@ -8,6 +8,7 @@ class TextFormFieldWidget extends StatelessWidget {
   final TextEditingController controller;
   final ValueChanged<String>? onChanged;
   final FormFieldValidator<String> validator;
+  final TextInputType? keyboardType;
 
   // final TextEditingController controller;
   const TextFormFieldWidget({
@@ -17,6 +18,7 @@ class TextFormFieldWidget extends StatelessWidget {
     required this.controller,
     this.onChanged,
     required this.validator,
+    this.keyboardType,
   });
 
   @override
@@ -26,6 +28,7 @@ class TextFormFieldWidget extends StatelessWidget {
       borderRadius: BorderRadius.circular(30),
       shadowColor: Colors.grey.withOpacity(0.4),
       child: TextFormField(
+        keyboardType: keyboardType,
         style: AppTextStyles.hintTextStyle1,
         initialValue: initialText,
         controller: controller,

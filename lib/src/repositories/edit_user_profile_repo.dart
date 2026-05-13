@@ -103,6 +103,7 @@ editUserProfileImageRepo(
   String? countryId,
   String? stateId,
   String? cityId,
+  String? phone,
   File? file1,
 ) async {
   dio_instance.FormData formData =
@@ -117,6 +118,7 @@ editUserProfileImageRepo(
     "country_id": countryId,
     "state_id": stateId,
     "city_id": cityId,
+    "phone_number": phone,
     "teacher_categories": "1",
     'image': await dio_instance.MultipartFile.fromFile(
       file1!.path,

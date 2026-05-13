@@ -1,4 +1,4 @@
-﻿import 'package:get/get.dart';
+import 'package:get/get.dart';
 
 class LanguagesChang extends Translations {
   @override
@@ -183,6 +183,10 @@ class LanguagesChang extends Translations {
           'profile_updated_successfully': 'Profile updated successfully',
           'lets_login': 'Lets Login',
           'delete_account': 'Delete Account',
+          'rate_us': 'Rate Us',
+          'your_feedback': 'Your Feedback',
+          'comment': 'Comment',
+          'additional_notes': 'Additional Notes',
         },
         'hi_IN': {
           'sign_in': 'दाखिल करना',
@@ -364,6 +368,10 @@ class LanguagesChang extends Translations {
           'profile_updated_successfully': 'प्रोफ़ाइल सफलतापूर्वक अपडेट हो गई',
           'lets_login': 'लॉगिन करें',
           'delete_account': 'खाता हटा दो',
+          'rate_us': 'हमें रेट करें',
+          'your_feedback': 'आपकी प्रतिक्रिया',
+          'comment': 'टिप्पणी',
+          'additional_notes': 'अतिरिक्त नोट्स',
         },
         'ar_AE': {
           'sign_in': 'تسجيل الدخول',
@@ -544,6 +552,10 @@ class LanguagesChang extends Translations {
           'profile_updated_successfully': "تم تحديث الملف الشخصي بنجاح",
           'lets_login': "لنقم بتسجيل الدخول",
           'delete_account': 'حذف الحساب',
+          'rate_us': 'قيمنا',
+          'your_feedback': 'تعليقاتك',
+          'comment': 'تعليق',
+          'additional_notes': 'ملاحظات إضافية',
         }
       };
 }

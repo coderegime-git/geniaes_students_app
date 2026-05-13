@@ -291,6 +291,7 @@ class LoginInfo {
     dynamic coverImage,
     String? createdAt,
     String? updatedAt,
+    String? phoneNumber,
   }) {
     _id = id;
     _userId = userId;
@@ -314,6 +315,7 @@ class LoginInfo {
     _coverImage = coverImage;
     _createdAt = createdAt;
     _updatedAt = updatedAt;
+    _phoneNumber = phoneNumber;
   }
 
   LoginInfo.fromJson(dynamic json) {
@@ -339,6 +341,7 @@ class LoginInfo {
     _coverImage = json['cover_image'];
     _createdAt = json['created_at'];
     _updatedAt = json['updated_at'];
+    _phoneNumber = json['phone_number'];
   }
   num? _id;
   num? _userId;
@@ -362,6 +365,7 @@ class LoginInfo {
   dynamic _coverImage;
   String? _createdAt;
   String? _updatedAt;
+  String? _phoneNumber;
   LoginInfo copyWith({
     num? id,
     num? userId,
@@ -385,6 +389,7 @@ class LoginInfo {
     dynamic coverImage,
     String? createdAt,
     String? updatedAt,
+    String? phoneNumber,
   }) =>
       LoginInfo(
         id: id ?? _id,
@@ -409,6 +414,7 @@ class LoginInfo {
         coverImage: coverImage ?? _coverImage,
         createdAt: createdAt ?? _createdAt,
         updatedAt: updatedAt ?? _updatedAt,
+        phoneNumber: phoneNumber ?? _phoneNumber,
       );
   num? get id => _id;
   num? get userId => _userId;
@@ -432,6 +438,7 @@ class LoginInfo {
   dynamic get coverImage => _coverImage;
   String? get createdAt => _createdAt;
   String? get updatedAt => _updatedAt;
+  String? get phoneNumber => _phoneNumber;
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
@@ -457,6 +464,7 @@ class LoginInfo {
     map['cover_image'] = _coverImage;
     map['created_at'] = _createdAt;
     map['updated_at'] = _updatedAt;
+    map['phone_number'] = _phoneNumber;
     return map;
   }
 }

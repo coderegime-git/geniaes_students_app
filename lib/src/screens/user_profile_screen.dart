@@ -113,12 +113,12 @@ class UserProfileScreenState extends State<UserProfileScreen> {
 
     editUserProfileLogic.userProfileDescriptionController.text =
         generalLogic.currentUserModel!.loginInfo!.description ?? '';
+    
+    editUserProfileLogic.userProfilePhoneController.text =
+        generalLogic.currentUserModel!.loginInfo!.phoneNumber ?? '';
 
     editUserProfileLogic.userProfileAddressLine1Controller.text =
         generalLogic.currentUserModel!.loginInfo!.addressLine1 ?? '';
-
-    editUserProfileLogic.userProfileZipCodeController.text =
-        generalLogic.currentUserModel!.loginInfo!.zipCode ?? '';
 
     editUserProfileLogic.userProfileZipCodeController.text =
         generalLogic.currentUserModel!.loginInfo!.zipCode ?? '';
@@ -356,6 +356,26 @@ class UserProfileScreenState extends State<UserProfileScreen> {
                           ),
                           const SizedBox(height: 14),
                           TextFormFieldWidget(
+                            hintText: '* ${LanguageConstant.phone.tr}',
+                            controller: editUserProfileController
+                                .userProfilePhoneController,
+                            keyboardType: TextInputType.phone,
+                            onChanged: (String? value) {
+                              editUserProfileController
+                                      .userProfilePhoneController.text =
+                                  value!;
+                              editUserProfileController.update();
+                            },
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return LanguageConstant.phoneFieldRequired.tr;
+                              } else {
+                                return null;
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 14),
+                          TextFormFieldWidget(
                             hintText: '* ${LanguageConstant.description.tr}',
                             controller: editUserProfileController
                                 .userProfileDescriptionController,
@@ -559,6 +579,8 @@ class UserProfileScreenState extends State<UserProfileScreen> {
                                           .selectedStateId?.toString(),
                                       editUserProfileController
                                           .selectedCityId?.toString(),
+                                      editUserProfileController
+                                          .userProfilePhoneController.text,
                                       editUserProfileController.profileImage,
                                     );
                                   } else if (generalLogic.currentUserModel!
@@ -617,6 +639,9 @@ class UserProfileScreenState extends State<UserProfileScreen> {
                                           "city_id": editUserProfileController
                                               .selectedCityId
                                               ?.toString(),
+                                          "phone_number": editUserProfileController
+                                              .userProfilePhoneController
+                                              .text,
                                           // "image": generalLogic
                                           //     .currentUserModel!
                                           //     .loginInfo!
