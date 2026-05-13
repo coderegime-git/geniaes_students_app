@@ -282,6 +282,7 @@ class LoginInfo {
     String? addressLine1,
     String? addressLine2,
     String? zipCode,
+    String? phoneNumber,
     dynamic isApproved,
     dynamic approvedAt,
     num? isActive,
@@ -305,6 +306,7 @@ class LoginInfo {
     _addressLine1 = addressLine1;
     _addressLine2 = addressLine2;
     _zipCode = zipCode;
+    _phoneNumber = phoneNumber;
     _isApproved = isApproved;
     _approvedAt = approvedAt;
     _isActive = isActive;
@@ -330,6 +332,7 @@ class LoginInfo {
     _addressLine1 = json['address_line_1'];
     _addressLine2 = json['address_line_2'];
     _zipCode = json['zip_code'];
+    _phoneNumber = json['phone_number'];
     _isApproved = json['is_approved'];
     _approvedAt = json['approved_at'];
     _isActive = json['is_active'];
@@ -353,6 +356,7 @@ class LoginInfo {
   String? _addressLine1;
   String? _addressLine2;
   String? _zipCode;
+  String? _phoneNumber;
   dynamic _isApproved;
   dynamic _approvedAt;
   num? _isActive;
@@ -400,6 +404,7 @@ class LoginInfo {
         addressLine1: addressLine1 ?? _addressLine1,
         addressLine2: addressLine2 ?? _addressLine2,
         zipCode: zipCode ?? _zipCode,
+        phoneNumber: phoneNumber ?? _phoneNumber,
         isApproved: isApproved ?? _isApproved,
         approvedAt: approvedAt ?? _approvedAt,
         isActive: isActive ?? _isActive,
@@ -423,6 +428,7 @@ class LoginInfo {
   String? get addressLine1 => _addressLine1;
   String? get addressLine2 => _addressLine2;
   String? get zipCode => _zipCode;
+  String? get phoneNumber => _phoneNumber;
   dynamic get isApproved => _isApproved;
   dynamic get approvedAt => _approvedAt;
   num? get isActive => _isActive;
@@ -448,6 +454,7 @@ class LoginInfo {
     map['address_line_1'] = _addressLine1;
     map['address_line_2'] = _addressLine2;
     map['zip_code'] = _zipCode;
+    map['phone_number'] = _phoneNumber;
     map['is_approved'] = _isApproved;
     map['approved_at'] = _approvedAt;
     map['is_active'] = _isActive;

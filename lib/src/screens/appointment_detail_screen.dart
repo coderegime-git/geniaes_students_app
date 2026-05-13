@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'package:resize/resize.dart';
+import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 
 import '../../multi_language/language_constants.dart';
 import '../api_services/urls.dart';
+import '../api_services/post_service.dart';
 import '../config/app_colors.dart';
 import '../config/app_text_styles.dart';
 import '../controllers/all_settings_controller.dart';
 import '../controllers/general_controller.dart';
-
+import '../widgets/rating_dialog.dart';
+import '../repositories/add_appointment_rating_repo.dart';
+import 'dart:developer';
 import '../controllers/live_chat_controller.dart';
 import '../routes.dart';
 import '../widgets/appbar_widget.dart';
 import '../widgets/button_widget.dart';
-import '../api_services/get_service.dart';
-import '../repositories/generate_agora_token_repo.dart';
 
 class AppointmentDetailScreen extends StatefulWidget {
   const AppointmentDetailScreen({super.key});
@@ -35,9 +36,14 @@ class AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<GeneralController>(builder: (generalController) {
-      return Scaffold(
-        backgroundColor: AppColors.white,
+    return GetBuilder<GeneralController>(
+      builder: (generalController) => ModalProgressHUD(
+        progressIndicator: const CircularProgressIndicator(
+          color: AppColors.primaryColor,
+        ),
+        inAsyncCall: generalController.appointmentStatusLoaderController,
+        child: Scaffold(
+          backgroundColor: AppColors.white,
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: AppBarWidget(
@@ -362,13 +368,26 @@ class AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                       style: AppTextStyles.headingTextStyle5,
                     ),
                     SizedBox(height: 6.h),
-                    const Text(
-                      "",
-                      // generalController
-                      //     .selectedAppointmentHistoryForView.attachmentUrl!
-                      //     .toString(),
-                      style: AppTextStyles.bodyTextStyle7,
-                    ),
+                    generalController.selectedAppointmentHistoryForView
+                                    .attachmentUrl !=
+                                null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image(
+                                  image: NetworkImage(
+                                      "$mediaUrl${generalController.selectedAppointmentHistoryForView.attachmentUrl!}"),
+                                  height: 150.h,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(Icons.broken_image,
+                                          size: 50, color: Colors.grey),
+                                ),
+                              )
+                            : const Text(
+                                "",
+                                style: AppTextStyles.bodyTextStyle7,
+                              ),
                   ],
                 ),
               ),
@@ -439,12 +458,163 @@ class AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                                     : Container(),
                       ],
                     )
-                : Container(),
+                : generalController.selectedAppointmentHistoryForView
+                                  .appointmentStatusCode ==
+                              5
+                          ? Column(
+                              children: [
+                                if (generalController
+                                        .selectedAppointmentHistoryForView
+                                        .isRating !=
+                                    1)
+                                  ButtonWidgetOne(
+                                      onTap: () {
+                                        showDialog(
+                                            context: context,
+                                            builder: (context) => RatingDialog(
+                                                  onSubmit: (rating, comment) {
+                                                    log("Rating: $rating, Comment: $comment");
+                                                    Get.find<GeneralController>()
+                                                        .updateAppointmentStatusLoaderController(
+                                                            true);
+                                                    postMethod(
+                                                        context,
+                                                        addAppointmentRatingURL,
+                                                        {
+                                                          "booked_appointment_id":
+                                                              generalController
+                                                                  .selectedAppointmentHistoryForView
+                                                                  .id,
+                                                          "comment": comment,
+                                                          "rating": rating
+                                                        },
+                                                        true,
+                                                        addAppointmentRatingRepo);
+                                                  },
+                                                ));
+                                      },
+                                      buttonText: LanguageConstant.rateUs.tr,
+                                      buttonTextStyle:
+                                          AppTextStyles.buttonTextStyle1,
+                                      borderRadius: 40,
+                                      buttonColor: AppColors.gradientOne),
+                                if (generalController
+                                            .selectedAppointmentHistoryForView
+                                            .rating !=
+                                        null ||
+                                    (generalController
+                                                .selectedAppointmentHistoryForView
+                                                .comment !=
+                                            null &&
+                                        generalController
+                                            .selectedAppointmentHistoryForView
+                                            .comment!
+                                            .isNotEmpty))
+                                  Container(
+                                    width: double.infinity,
+                                    padding: EdgeInsets.all(16.w),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.white,
+                                      borderRadius: BorderRadius.circular(15),
+                                      border: Border.all(
+                                          color:
+                                              AppColors.grey.withOpacity(0.2)),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey.withOpacity(0.1),
+                                          spreadRadius: 1,
+                                          blurRadius: 5,
+                                        )
+                                      ],
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          LanguageConstant.yourFeedback.tr,
+                                          style: AppTextStyles.bodyTextStyle14
+                                              .copyWith(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black),
+                                        ),
+                                        SizedBox(height: 12.h),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              "Rating:",
+                                              style: AppTextStyles
+                                                  .bodyTextStyle10
+                                                  .copyWith(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.black),
+                                            ),
+                                            SizedBox(width: 4.w),
+                                            Row(
+                                              children:
+                                                  List.generate(5, (index) {
+                                                return Icon(
+                                                  index <
+                                                          (generalController
+                                                                  .selectedAppointmentHistoryForView
+                                                                  .rating ??
+                                                              0)
+                                                      ? Icons.star
+                                                      : Icons.star_border,
+                                                  color: Colors.amber,
+                                                  size: 16.h,
+                                                );
+                                              }),
+                                            ),
+                                          ],
+                                        ),
+                                        if (generalController
+                                                .selectedAppointmentHistoryForView
+                                                .comment !=
+                                            null &&
+                                            generalController
+                                                .selectedAppointmentHistoryForView
+                                                .comment!
+                                                .isNotEmpty)
+                                          Padding(
+                                            padding: EdgeInsets.only(top: 4.h),
+                                            child: RichText(
+                                              text: TextSpan(
+                                                style: AppTextStyles
+                                                    .bodyTextStyle10
+                                                    .copyWith(
+                                                        color: Colors.black),
+                                                children: [
+                                                  const TextSpan(
+                                                    text: "Comment: ",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.black),
+                                                  ),
+                                                  TextSpan(
+                                                    text: generalController
+                                                        .selectedAppointmentHistoryForView
+                                                        .comment!,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                SizedBox(height: 20.h),
+                              ],
+                            )
+                          : Container(),
             ],
           ),
         ),
-        ),
-      );
-    });
-  }
+      ),
+    ),
+   ),
+  );
+ }
 }

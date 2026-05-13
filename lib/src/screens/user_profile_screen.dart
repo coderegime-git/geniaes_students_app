@@ -120,6 +120,9 @@ class UserProfileScreenState extends State<UserProfileScreen> {
     editUserProfileLogic.userProfileZipCodeController.text =
         generalLogic.currentUserModel!.loginInfo!.zipCode ?? '';
 
+    editUserProfileLogic.userProfilePhoneController.text =
+        generalLogic.currentUserModel!.loginInfo!.phoneNumber ?? '';
+
     editUserProfileLogic.userProfileZipCodeController.text =
         generalLogic.currentUserModel!.loginInfo!.zipCode ?? '';
 
@@ -421,6 +424,26 @@ class UserProfileScreenState extends State<UserProfileScreen> {
                             },
                           ),
                           const SizedBox(height: 14),
+                          TextFormFieldWidget(
+                            hintText: '* ${LanguageConstant.phone.tr}',
+                            controller: editUserProfileController
+                                .userProfilePhoneController,
+                            keyboardType: TextInputType.phone,
+                            onChanged: (String? value) {
+                              editUserProfileController
+                                      .userProfilePhoneController.text ==
+                                  value;
+                              editUserProfileController.update();
+                            },
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return LanguageConstant.phoneFieldRequired.tr;
+                              } else {
+                                return null;
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 14),
                           editUserProfileController.isLoadingCountries
                               ? const CircularProgressIndicator()
                               : _buildDropdownField(
@@ -554,6 +577,8 @@ class UserProfileScreenState extends State<UserProfileScreen> {
                                       editUserProfileController
                                           .userProfileZipCodeController.text,
                                       editUserProfileController
+                                          .userProfilePhoneController.text,
+                                      editUserProfileController
                                           .selectedCountryId?.toString(),
                                       editUserProfileController
                                           .selectedStateId?.toString(),
@@ -606,6 +631,9 @@ class UserProfileScreenState extends State<UserProfileScreen> {
                                                   .text,
                                           "zip_code": editUserProfileController
                                               .userProfileZipCodeController
+                                              .text,
+                                          "phone_number": editUserProfileController
+                                              .userProfilePhoneController
                                               .text,
                                           "country_id":
                                               editUserProfileController

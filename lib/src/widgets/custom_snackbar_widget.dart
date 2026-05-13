@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-showSnackBar(String title, String subTitle) {
+showSnackBar(String title, String subTitle, {Color? color}) {
   Get.snackbar(title, subTitle,
-      colorText: Theme.of(Get.context!).snackBarTheme.actionTextColor,
-      backgroundColor: Theme.of(Get.context!).snackBarTheme.backgroundColor);
+      colorText: Colors.white,
+      backgroundColor: color ?? Colors.black);
 }

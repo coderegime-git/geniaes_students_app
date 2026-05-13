@@ -140,3 +140,7 @@ String getPaymentGatewaysURL = "${apiBaseUrl}gateways";
 
 // Open Web View For Payment URls
 String webViewPaymentURL = "${baseUrl}add_fund_confirm";
+
+// Appointment Rating
+String addAppointmentRatingURL = "${apiBaseUrl}students/add_appointment_rating";
+String updateAppointmentStatusURL = "${apiBaseUrl}students/update_appointment_status";

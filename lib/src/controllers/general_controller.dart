@@ -40,6 +40,13 @@ class GeneralController extends GetxController {
     update();
   }
 
+  bool appointmentStatusLoaderController = false;
+
+  updateAppointmentStatusLoaderController(bool newValue) {
+    appointmentStatusLoaderController = newValue;
+    update();
+  }
+
   bool callLoaderController = false;
   bool? isSearchOn;
 

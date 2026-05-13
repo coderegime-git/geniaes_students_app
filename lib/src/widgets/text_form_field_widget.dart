@@ -7,6 +7,7 @@ class TextFormFieldWidget extends StatelessWidget {
   final String? hintText, initialText;
   final TextEditingController controller;
   final ValueChanged<String>? onChanged;
+  final TextInputType? keyboardType;
   final FormFieldValidator<String> validator;
 
   // final TextEditingController controller;
@@ -16,6 +17,7 @@ class TextFormFieldWidget extends StatelessWidget {
     this.initialText,
     required this.controller,
     this.onChanged,
+    this.keyboardType,
     required this.validator,
   });
 
@@ -30,6 +32,7 @@ class TextFormFieldWidget extends StatelessWidget {
         initialValue: initialText,
         controller: controller,
         onChanged: onChanged,
+        keyboardType: keyboardType,
         validator: validator,
         decoration: InputDecoration(
           hintText: hintText,

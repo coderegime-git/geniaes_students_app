@@ -183,4 +183,8 @@ class LanguageConstant {
       'profile_updated_successfully';
   static const String letsLogin = 'lets_login';
   static const String deleteAccount = 'delete_account';
+  static const String rateUs = 'rate_us';
+  static const String yourFeedback = 'Your Feedback';
+  static const String comment = 'comment';
+  static const String additionalNotes = 'additional_notes';
 }
