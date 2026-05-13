@@ -6,6 +6,7 @@ import '../widgets/custom_snackbar_widget.dart';
 import '../api_services/get_service.dart';
 import '../api_services/urls.dart';
 import 'student_appointment_history_repo.dart';
+import '../routes.dart';
 
 addAppointmentRatingRepo(
     BuildContext context, bool responseCheck, Map<String, dynamic> response) {
@@ -29,6 +30,9 @@ addAppointmentRatingRepo(
       // Reload history to reflect changes in the background
       getMethod(context, "$getStudentAppointmentHistory?page=1", null, true,
           getAllStudentAppointmentHistoryRepo);
+
+      // Navigate to History screen and select Completed tab (index 4)
+      Get.offNamed(PageRoutes.appointmentHistoryScreen, arguments: {"initialIndex": 4});
     } else {
       log("Failed to add rating: ${response['message']}");
       showSnackBar("Error", response['message'] ?? "Failed to add rating", color: Colors.red);
