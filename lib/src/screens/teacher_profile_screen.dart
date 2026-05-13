@@ -128,8 +128,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                         itemCount:
                                             teacherAppointmentTypesController
                                                 .getTeacherAppointmentTypesModel
-                                                .data!
-                                                .length,
+                                                .data?.length ?? 0,
                                         scrollDirection: Axis.horizontal,
                                         physics:
                                             const NeverScrollableScrollPhysics(),
@@ -146,9 +145,9 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                                 buttonText:
                                                     teacherAppointmentTypesController
                                                         .getTeacherAppointmentTypesModel
-                                                        .data![index]
+                                                        .data?[index]
                                                         .displayName
-                                                        .toString(),
+                                                        .toString() ?? "",
                                                 buttonTextStyle: AppTextStyles
                                                     .buttonTextStyle5,
                                                 onTap:
@@ -162,7 +161,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                                             //     .videoCallAppointmentScreen);
                                                             teacherAppointmentTypesController
                                                                         .getTeacherAppointmentTypesModel
-                                                                        .data![
+                                                                        .data?[
                                                                             index]
                                                                         .id ==
                                                                     1
@@ -172,9 +171,9 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                                                     parameters: {
                                                                         "appointmentTypeId": teacherAppointmentTypesController
                                                                             .getTeacherAppointmentTypesModel
-                                                                            .data![index]
-                                                                            .id!
-                                                                            .toString(),
+                                                                            .data?[index]
+                                                                            .id
+                                                                            ?.toString() ?? "",
                                                                         "screenTitle": LanguageConstant
                                                                             .videoCallAppointmet
                                                                             .tr,
@@ -190,16 +189,16 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                                                             .callAppointmentScreen,
                                                                         parameters: {
                                                                             "appointmentTypeId":
-                                                                                teacherAppointmentTypesController.getTeacherAppointmentTypesModel.data![index].id!.toString(),
+                                                                                teacherAppointmentTypesController.getTeacherAppointmentTypesModel.data?[index].id?.toString() ?? "",
                                                                             "screenTitle":
                                                                                 LanguageConstant.audioCallAppointmet.tr,
                                                                           })
-                                                                    : teacherAppointmentTypesController.getTeacherAppointmentTypesModel.data![index].id ==
+                                                                    : teacherAppointmentTypesController.getTeacherAppointmentTypesModel.data?[index].id ==
                                                                             3
                                                                         ? Get.toNamed(
                                                                             PageRoutes.chatAppointmentScreen,
                                                                             parameters: {
-                                                                                "appointmentTypeId": teacherAppointmentTypesController.getTeacherAppointmentTypesModel.data![index].id!.toString(),
+                                                                                "appointmentTypeId": teacherAppointmentTypesController.getTeacherAppointmentTypesModel.data?[index].id?.toString() ?? "",
                                                                                 "screenTitle": LanguageConstant.chatAppointmet.tr,
                                                                               })
                                                                         : '';

@@ -16,6 +16,9 @@ getMethod(BuildContext context, String apiUrl, dynamic queryData,
   dio_instance.Response response;
   dio_instance.Dio dio = dio_instance.Dio();
 
+  setAcceptHeader(dio);
+  setContentHeader(dio);
+
   if (addAuthHeader &&
       Get.find<GeneralController>().storageBox.hasData('authToken')) {
     setCustomHeader(dio, 'Authorization',
@@ -26,7 +29,7 @@ getMethod(BuildContext context, String apiUrl, dynamic queryData,
       '${Get.find<GeneralController>().storageBox.read('languageCode')}');
   log('Get Method Api $apiUrl ---->>>>');
   log('queryData $queryData ---->>>>');
-  log('Get Token ${Get.find<GeneralController>().storageBox.read('authToken')}} ---->>>>');
+  log('Get Token ${Get.find<GeneralController>().storageBox.read('authToken')} ---->>>>');
 
   Get.find<ApiController>().changeInternetCheckerState(true);
 
@@ -35,10 +38,25 @@ getMethod(BuildContext context, String apiUrl, dynamic queryData,
 
     if (response.statusCode == 200) {
       log('getApi $apiUrl ---->>>>  ${response.data}');
+      if (_isHtmlResponse(response.data)) {
+        log('ERROR: API returned HTML for $apiUrl — token may be invalid or missing Accept header.');
+        executionMethod(context, false, <String, dynamic>{
+          'success': false,
+          'message': 'Unexpected HTML response from server.',
+        });
+        return;
+      }
       executionMethod(context, true, response.data);
       return;
     }
     log('getApi $apiUrl ---->>>>  ${response.data}');
+    if (_isHtmlResponse(response.data)) {
+      executionMethod(context, false, <String, dynamic>{
+        'success': false,
+        'message': 'Unexpected HTML response from server.',
+      });
+      return;
+    }
     executionMethod(context, false, response.data);
   } on dio_instance.DioError catch (e) {
     log('Dio Error     $apiUrl $queryData ---->>>>${e.response}');
@@ -58,13 +76,32 @@ getMethod(BuildContext context, String apiUrl, dynamic queryData,
               functionCall: () {
                 Navigator.pop(context);
               },
-              // img: 'assets/icons/dialog_error.png',
               img: 'assets/icons/View@2x.png',
             );
           });
       Get.find<ApiController>().changeInternetCheckerState(false);
     } else {
-      executionMethod(context, false, e.response?.data ?? {'message': e.message});
+      final errorData = e.response?.data;
+      if (_isHtmlResponse(errorData)) {
+        log('ERROR: DioError HTML response for $apiUrl');
+        executionMethod(context, false, <String, dynamic>{
+          'success': false,
+          'message': 'Unexpected HTML response from server.',
+        });
+      } else {
+        executionMethod(context, false, errorData ?? {'message': e.message});
+      }
     }
   }
+}
+
+/// Returns true if the response body is an HTML page rather than JSON.
+bool _isHtmlResponse(dynamic data) {
+  if (data is String) {
+    final trimmed = data.trimLeft();
+    return trimmed.startsWith('<!DOCTYPE') ||
+        trimmed.startsWith('<!doctype') ||
+        trimmed.startsWith('<html');
+  }
+  return false;
 }

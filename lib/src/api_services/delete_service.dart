@@ -25,6 +25,7 @@ deleteMethod(BuildContext context, String apiUrl, dynamic queryData,
       Get.find<GeneralController>().storageBox.hasData('authToken')) {
     setCustomHeader(dio, 'Authorization',
         'Bearer ${Get.find<GeneralController>().storageBox.read('authToken')}');
+    setCustomHeader(dio, 'logged-in-as', 'student');
   }
   setLanguageHeader(dio, 'locale',
       '${Get.find<GeneralController>().storageBox.read('languageCode')}');
@@ -40,15 +41,39 @@ deleteMethod(BuildContext context, String apiUrl, dynamic queryData,
 
         if (response.statusCode == 200) {
           log('response  ....  ${response.data}');
+          if (_isHtmlResponse(response.data)) {
+            log('ERROR: API returned HTML for $apiUrl');
+            executionMethod(context, false, <String, dynamic>{
+              'success': false,
+              'message': 'Unexpected HTML response from server.',
+            });
+            return;
+          }
           executionMethod(context, true, response.data);
 
           return;
         }
         log('response   ....  $response');
+        if (_isHtmlResponse(response.data)) {
+          executionMethod(context, false, <String, dynamic>{
+            'success': false,
+            'message': 'Unexpected HTML response from server.',
+          });
+          return;
+        }
         executionMethod(context, false, response.data);
       } on dio_instance.DioError catch (e) {
         log('Dio Error  ....  ${e.response}');
-        executionMethod(context, false, e.response!.data);
+        final errorData = e.response?.data;
+        if (_isHtmlResponse(errorData)) {
+          log('ERROR: DioError HTML response for $apiUrl');
+          executionMethod(context, false, <String, dynamic>{
+            'success': false,
+            'message': 'Unexpected HTML response from server.',
+          });
+        } else {
+          executionMethod(context, false, errorData ?? {'message': e.message});
+        }
       }
     }
   } on SocketException catch (_) {
@@ -71,4 +96,15 @@ deleteMethod(BuildContext context, String apiUrl, dynamic queryData,
         });
     Get.find<ApiController>().changeInternetCheckerState(false);
   }
+}
+
+/// Returns true if the response body is an HTML page rather than JSON.
+bool _isHtmlResponse(dynamic data) {
+  if (data is String) {
+    final trimmed = data.trimLeft();
+    return trimmed.startsWith('<!DOCTYPE') ||
+        trimmed.startsWith('<!doctype') ||
+        trimmed.startsWith('<html');
+  }
+  return false;
 }

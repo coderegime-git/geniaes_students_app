@@ -67,7 +67,7 @@ class WalletScreenState extends State<WalletScreen> {
               titleText: LanguageConstant.wallet.tr,
             ),
           ),
-          body: !walletController.allWalletTransactionLoader
+          body: !walletController.allWalletTransactionLoader || !walletController.allWalletBalanceLoader
               ? CustomVerticalSkeletonLoader(
                   height: 200.h,
                   highlightColor: AppColors.grey,
@@ -90,11 +90,11 @@ class WalletScreenState extends State<WalletScreen> {
                           children: [
                             Column(
                               children: [
-                                Text(
-                                  Get.find<GetAllSettingsController>()
-                                      .getDisplayAmount(int.parse(
-                                          walletController
-                                              .getWalletBalanceModel.data)),
+                                  Text(
+                                    Get.find<GetAllSettingsController>()
+                                        .getDisplayAmount(int.parse(
+                                            walletController
+                                                .getWalletBalanceModel.data?.toString() ?? "0")),
                                   style: AppTextStyles.bodyTextStyle17,
                                 ),
                                 SizedBox(height: 12.h),
@@ -193,7 +193,7 @@ class WalletScreenState extends State<WalletScreen> {
                                                   walletController
                                                       .walletTransactionForPagination[
                                                           index]
-                                                      .amount!)),
+                                                      .amount?.toString() ?? "0")),
                                           style: AppTextStyles.bodyTextStyle18,
                                         ),
                                         SizedBox(width: 12.w),
@@ -221,13 +221,14 @@ class WalletScreenState extends State<WalletScreen> {
                                 ),
                               ),
                             ),
-                      walletController.walletTransactionForPagination.length >=
-                              walletController.getWalletTransactionsModel.data!
-                                  .meta!.perPage!
-                          ? walletController
-                                      .walletTransactionForPagination.length ==
-                                  walletController.getWalletTransactionsModel
-                                      .data!.data!.length
+                      walletController.walletTransactionForPagination.isNotEmpty &&
+                          walletController.getWalletTransactionsModel.data != null &&
+                          walletController.getWalletTransactionsModel.data!.meta != null &&
+                          walletController.walletTransactionForPagination.length >=
+                              (walletController.getWalletTransactionsModel.data!.meta!.perPage ?? 0)
+                          ? (walletController.getWalletTransactionsModel.data!.data != null &&
+                                  walletController.walletTransactionForPagination.length ==
+                                      walletController.getWalletTransactionsModel.data!.data!.length)
                               ? Container(
                                   margin:
                                       const EdgeInsets.fromLTRB(0, 0, 0, 18),
