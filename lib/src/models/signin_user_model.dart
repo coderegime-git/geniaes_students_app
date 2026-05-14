@@ -300,6 +300,7 @@ class LoginInfo {
     String? addressLine2,
     String? userName,
     String? zipCode,
+    String? phoneNumber,
     num? isApproved,
     String? approvedAt,
     num? isActive,
@@ -327,6 +328,7 @@ class LoginInfo {
     _addressLine2 = addressLine2;
     _userName = userName;
     _zipCode = zipCode;
+    _phoneNumber = phoneNumber;
     _isApproved = isApproved;
     _approvedAt = approvedAt;
     _isActive = isActive;
@@ -357,6 +359,7 @@ class LoginInfo {
     _addressLine2 = json['address_line_2'];
     _userName = json['user_name'];
     _zipCode = json['zip_code'];
+    _phoneNumber = json['phone_number'];
     _isApproved = json['is_approved'];
     _approvedAt = json['approved_at'];
     _isActive = json['is_active'];
@@ -393,6 +396,7 @@ class LoginInfo {
   String? _addressLine2;
   String? _userName;
   String? _zipCode;
+  String? _phoneNumber;
   num? _isApproved;
   String? _approvedAt;
   num? _isActive;
@@ -420,6 +424,7 @@ class LoginInfo {
     String? addressLine2,
     String? userName,
     String? zipCode,
+    String? phoneNumber,
     num? isApproved,
     String? approvedAt,
     num? isActive,
@@ -448,6 +453,7 @@ class LoginInfo {
         addressLine2: addressLine2 ?? _addressLine2,
         userName: userName ?? _userName,
         zipCode: zipCode ?? _zipCode,
+        phoneNumber: phoneNumber ?? _phoneNumber,
         isApproved: isApproved ?? _isApproved,
         approvedAt: approvedAt ?? _approvedAt,
         isActive: isActive ?? _isActive,
@@ -475,6 +481,7 @@ class LoginInfo {
   String? get addressLine2 => _addressLine2;
   String? get userName => _userName;
   String? get zipCode => _zipCode;
+  String? get phoneNumber => _phoneNumber;
   num? get isApproved => _isApproved;
   String? get approvedAt => _approvedAt;
   num? get isActive => _isActive;
@@ -504,6 +511,7 @@ class LoginInfo {
     map['address_line_2'] = _addressLine2;
     map['user_name'] = _userName;
     map['zip_code'] = _zipCode;
+    map['phone_number'] = _phoneNumber;
     map['is_approved'] = _isApproved;
     map['approved_at'] = _approvedAt;
     map['is_active'] = _isActive;

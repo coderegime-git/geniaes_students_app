@@ -8,6 +8,7 @@ import '../controllers/general_controller.dart';
 import '../controllers/pusher_beams_controller.dart';
 import '../controllers/signin_controller.dart';
 import '../models/signin_user_model.dart';
+import '../models/logged_in_user_model.dart' as logged_in_user;
 import '../routes.dart';
 import '../widgets/custom_dialog.dart';
 
@@ -38,13 +39,15 @@ signInWithEmailRepo(
       // Main Authenticated User ID
       Get.find<GeneralController>().storageBox.write('mainUserId',
           Get.find<SigninController>().signInUserModel.data!.user!.id);
-      Get.find<PusherBeamsController>().initPusherBeams();
+      Get.find<GeneralController>().currentUserModel =
+          logged_in_user.User.fromJson(
+              Get.find<SigninController>().signInUserModel.data!.user!.toJson());
 
       if (Get.find<SigninController>().signInUserModel.data!.user!.isStudent ==
           true) {
         Get.find<GeneralController>().updateFormLoaderController(false);
         print("Login As Student");
-        Get.toNamed(PageRoutes.homeScreen);
+        Get.offAllNamed(PageRoutes.homeScreen);
       } else {
         Get.find<GeneralController>().updateFormLoaderController(false);
       }
@@ -101,20 +104,28 @@ socialSignInWithEmailRepo(
           'userID',
           Get.find<SigninController>()
               .signInUserModel
-              .data!
-              .user!
-              .loginInfo!
-              .id);
+              .data
+              ?.user
+              ?.loginInfo
+              ?.id);
 
       Get.find<GeneralController>().storageBox.write('login_as', "student");
       Get.find<GeneralController>().storageBox.write('userData',
           jsonEncode(Get.find<SigninController>().signInUserModel.data!.user));
+
+      Get.find<GeneralController>().storageBox.write('mainUserId',
+          Get.find<SigninController>().signInUserModel.data!.user!.id);
+
+      Get.find<GeneralController>().currentUserModel =
+          logged_in_user.User.fromJson(
+              Get.find<SigninController>().signInUserModel.data!.user!.toJson());
+
       Get.find<PusherBeamsController>().initPusherBeams();
       if (Get.find<SigninController>().signInUserModel.data!.user!.isStudent ==
           true) {
         Get.find<GeneralController>().updateFormLoaderController(false);
         print("Login As Student");
-        Get.toNamed(PageRoutes.homeScreen);
+        Get.offAllNamed(PageRoutes.homeScreen);
       } else {
         Get.find<GeneralController>().updateFormLoaderController(false);
       }

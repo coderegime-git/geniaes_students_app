@@ -104,37 +104,37 @@ class UserProfileScreenState extends State<UserProfileScreen> {
     super.initState();
     // getMethod(context, getLoggedInUserUrl, null, true, loggedInUserRepo);
     editUserProfileLogic.userProfileFirstNameController.text =
-        generalLogic.currentUserModel!.loginInfo!.firstName ?? '';
+        generalLogic.currentUserModel?.loginInfo?.firstName ?? '';
 
     editUserProfileLogic.userProfileLastNameController.text =
-        generalLogic.currentUserModel!.loginInfo!.lastName ?? '';
+        generalLogic.currentUserModel?.loginInfo?.lastName ?? '';
 
     editUserProfileLogic.userProfileUserNameController.text =
-        generalLogic.currentUserModel!.loginInfo!.userName ?? '';
+        generalLogic.currentUserModel?.loginInfo?.userName ?? '';
 
     editUserProfileLogic.userProfileDescriptionController.text =
-        generalLogic.currentUserModel!.loginInfo!.description ?? '';
+        generalLogic.currentUserModel?.loginInfo?.description ?? '';
 
     editUserProfileLogic.userProfileAddressLine1Controller.text =
-        generalLogic.currentUserModel!.loginInfo!.addressLine1 ?? '';
+        generalLogic.currentUserModel?.loginInfo?.addressLine1 ?? '';
 
     editUserProfileLogic.userProfileZipCodeController.text =
-        generalLogic.currentUserModel!.loginInfo!.zipCode ?? '';
+        generalLogic.currentUserModel?.loginInfo?.zipCode ?? '';
 
     editUserProfileLogic.userProfilePhoneController.text =
-        generalLogic.currentUserModel!.loginInfo!.phoneNumber ?? '';
+        generalLogic.currentUserModel?.loginInfo?.phoneNumber ?? '';
 
     editUserProfileLogic.userProfileZipCodeController.text =
-        generalLogic.currentUserModel!.loginInfo!.zipCode ?? '';
+        generalLogic.currentUserModel?.loginInfo?.zipCode ?? '';
 
     // Initialize dropdowns with existing IDs
     editUserProfileLogic.initializeDropdowns(
-      cId: int.tryParse(generalLogic.currentUserModel!.loginInfo!.countryId?.toString() ?? ''),
-      sId: int.tryParse(generalLogic.currentUserModel!.loginInfo!.stateId?.toString() ?? ''),
-      cityId: int.tryParse(generalLogic.currentUserModel!.loginInfo!.cityId?.toString() ?? ''),
+      cId: int.tryParse(generalLogic.currentUserModel?.loginInfo?.countryId?.toString() ?? ''),
+      sId: int.tryParse(generalLogic.currentUserModel?.loginInfo?.stateId?.toString() ?? ''),
+      cityId: int.tryParse(generalLogic.currentUserModel?.loginInfo?.cityId?.toString() ?? ''),
     );
 
-    log("${generalLogic.currentUserModel!.loginInfo!.image} Log Image");
+    log("${generalLogic.currentUserModel?.loginInfo?.image} Log Image");
   }
 
   @override
