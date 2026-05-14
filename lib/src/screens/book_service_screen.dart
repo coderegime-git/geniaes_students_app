@@ -118,8 +118,7 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                       borderRadius: BorderRadius.circular(10),
                       child: Get.find<AllServicesController>()
                                   .selectedServiceForView
-                                  .image
-                                  ?.length !=
+                                  .image !=
                               null
                           ? Image(
                               image: NetworkImage(
@@ -170,9 +169,10 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                         Row(
                           children: [
                             RatingBar.builder(
-                              initialRating: Get.find<GeneralController>()
-                                  .selectedTeacherForView
-                                  .rating!
+                              initialRating: (Get.find<AllServicesController>()
+                                          .selectedServiceForView
+                                          .rating ??
+                                      0)
                                   .toDouble(),
                               minRating: 1,
                               itemSize: 15.h,
@@ -191,7 +191,7 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                             SizedBox(width: 2.w),
                             Text(
                               // '4.5',
-                              "(${Get.find<AllServicesController>().selectedServiceForView.rating!})",
+                              "(${Get.find<AllServicesController>().selectedServiceForView.rating ?? 0})",
                               textAlign: TextAlign.start,
                               style: AppTextStyles.bodyTextStyle6,
                             ),
@@ -211,7 +211,8 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                                   .getDisplayAmount(
                                       Get.find<AllServicesController>()
                                           .selectedServiceForView
-                                          .price!),
+                                          .price ??
+                                      0),
                               style: AppTextStyles.bodyTextStyle11,
                             ),
                           ],
@@ -290,26 +291,26 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                         ), // Not necessary for Option 1
                         value: selectedPaymentGateway,
 
-                        items: Get.find<PaymentGatewaysController>()
-                            .getPaymentGatewaysModel
-                            .data!
-                            .map((gatewaysName) {
+                        items: (Get.find<PaymentGatewaysController>()
+                                        .getPaymentGatewaysModel
+                                        .data ??
+                                    [])
+                                .map((gatewaysName) {
                           return DropdownMenuItem(
                             value: gatewaysName.code,
-                            child: DropdownMenuItem(
-                              child: Row(
-                                children: [
+                            child: Row(
+                              children: [
+                                if (gatewaysName.image != null)
                                   Image.network(
                                     "$mediaUrl${gatewaysName.image!}",
                                     height: 35.h,
                                   ),
-                                  SizedBox(
-                                    width: 8.w,
-                                  ),
-                                  Text(gatewaysName.name!,
-                                      style: AppTextStyles.bodyTextStyle11),
-                                ],
-                              ),
+                                SizedBox(
+                                  width: 8.w,
+                                ),
+                                Text(gatewaysName.name ?? "",
+                                    style: AppTextStyles.bodyTextStyle11),
+                              ],
                             ),
                           );
                         }).toList(),
@@ -345,11 +346,11 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
             ),
           ),
           SizedBox(height: 16.h),
-          Get.find<GetAllSettingsController>()
-                      .getAllSettingsModel
-                      .data!
-                      .enableWalletSystem ==
-                  "1"
+          (Get.find<GetAllSettingsController>()
+                          .getAllSettingsModel
+                          .data
+                          ?.enableWalletSystem ==
+                      "1")
               ? ButtonWidgetOne(
                   onTap: () {
                     // Book Service API Make Payment via Wallet
@@ -485,7 +486,8 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                                 .getDisplayAmount(
                                     Get.find<AllServicesController>()
                                         .selectedServiceForView
-                                        .price!),
+                                        .price ??
+                                    0),
                             style: AppTextStyles.subHeadingTextStyle1,
                           ),
                         ],

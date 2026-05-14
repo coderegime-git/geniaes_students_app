@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:get/get.dart';
@@ -34,16 +35,17 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // /isabellacarrington/appointment_types
+    String userName =
+        Get.find<GeneralController>().selectedTeacherForView.userName ?? "";
+    log("$userName TeacherUsername");
+
+    // Fetch Full Teacher Profile
+    getMethod(context, '$getTeacherProfileUrl$userName', null, true,
+        getTeacherProfileRepo);
+
     // Get Teacher Appointment Types API Call
-    print(
-        "${Get.find<GeneralController>().selectedTeacherForView.userName} TeacherUsername");
-    getMethod(
-        context,
-        '$getTeacherAppointmentTypes${Get.find<GeneralController>().selectedTeacherForView.userName}/appointment_types',
-        null,
-        false,
-        getTeacherAppointmentTypesRepo);
+    getMethod(context, '$getTeacherAppointmentTypes$userName/appointment_types',
+        null, true, getTeacherAppointmentTypesRepo);
   }
 
   @override
@@ -225,69 +227,136 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                // "Jhon Doe",
-                                                generalController
-                                                    .selectedTeacherForView.name
-                                                    .toString(),
-                                                textAlign: TextAlign.start,
-                                                style: AppTextStyles
-                                                    .bodyTextStyle13,
-                                              ),
-                                              SizedBox(
-                                                height: 5.h,
-                                              ),
-                                              Text(
-                                                // 'jhondoe@gmail.com',
-                                                "${generalController.selectedTeacherForView.userName}",
-                                                textAlign: TextAlign.start,
-                                                style: AppTextStyles
-                                                    .bodyTextStyle9,
-                                              ),
-                                            ],
+                                          Expanded(
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  // "Jhon Doe",
+                                                  generalController
+                                                      .selectedTeacherForView
+                                                      .name
+                                                      .toString(),
+                                                  textAlign: TextAlign.start,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: AppTextStyles
+                                                      .bodyTextStyle13,
+                                                ),
+                                                SizedBox(
+                                                  height: 5.h,
+                                                ),
+                                                Text(
+                                                  // 'jhondoe@gmail.com',
+                                                  "${generalController.selectedTeacherForView.userName}",
+                                                  textAlign: TextAlign.start,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: AppTextStyles
+                                                      .bodyTextStyle9,
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                           Row(
                                             children: [
-                                              GestureDetector(
-                                                onTap: () async {
-                                                  await launchUrl(Uri.parse(
-                                                      "${generalController.selectedTeacherForView.teacherSettings!.facebookUrl}"));
-                                                },
-                                                child: Image.asset(
-                                                  "assets/icons/icon_Facebook_F_.png",
-                                                  color: AppColors.primaryColor,
+                                              if (generalController
+                                                          .selectedTeacherForView
+                                                          .teacherSettings?[
+                                                      "facebook_url"] !=
+                                                  null)
+                                                GestureDetector(
+                                                  onTap: () async {
+                                                    String url = generalController
+                                                            .selectedTeacherForView
+                                                            .teacherSettings![
+                                                        "facebook_url"];
+                                                    if (url.isNotEmpty) {
+                                                      if (!url.startsWith(
+                                                          'http')) {
+                                                        url = 'https://$url';
+                                                      }
+                                                      await launchUrl(
+                                                          Uri.parse(url));
+                                                    }
+                                                  },
+                                                  child: Image.asset(
+                                                    "assets/icons/icon_Facebook_F_.png",
+                                                    color:
+                                                        AppColors.primaryColor,
+                                                  ),
                                                 ),
-                                              ),
-                                              SizedBox(
-                                                width: 10.w,
-                                              ),
-                                              GestureDetector(
-                                                onTap: () async {
-                                                  await launchUrl(Uri.parse(
-                                                      "${generalController.selectedTeacherForView.teacherSettings!.instagramUrl}"));
-                                                },
-                                                child: Image.asset(
-                                                  "assets/icons/icon_Instagram_.png",
-                                                  color: AppColors.primaryColor,
+                                              if (generalController
+                                                          .selectedTeacherForView
+                                                          .teacherSettings?[
+                                                      "facebook_url"] !=
+                                                  null)
+                                                SizedBox(
+                                                  width: 10.w,
                                                 ),
-                                              ),
-                                              SizedBox(
-                                                width: 10.w,
-                                              ),
-                                              GestureDetector(
-                                                onTap: () async {
-                                                  await launchUrl(Uri.parse(
-                                                      "${generalController.selectedTeacherForView.teacherSettings!.twitterUrl}"));
-                                                },
-                                                child: Image.asset(
-                                                  "assets/icons/icon_Twitter_.png",
-                                                  color: AppColors.primaryColor,
+                                              if (generalController
+                                                          .selectedTeacherForView
+                                                          .teacherSettings?[
+                                                      "instagram_url"] !=
+                                                  null)
+                                                GestureDetector(
+                                                  onTap: () async {
+                                                    String url = generalController
+                                                            .selectedTeacherForView
+                                                            .teacherSettings![
+                                                        "instagram_url"];
+                                                    if (url.isNotEmpty) {
+                                                      if (!url.startsWith(
+                                                          'http')) {
+                                                        url = 'https://$url';
+                                                      }
+                                                      await launchUrl(
+                                                          Uri.parse(url));
+                                                    }
+                                                  },
+                                                  child: Image.asset(
+                                                    "assets/icons/icon_Instagram_.png",
+                                                    color:
+                                                        AppColors.primaryColor,
+                                                  ),
                                                 ),
-                                              ),
+                                              if (generalController
+                                                          .selectedTeacherForView
+                                                          .teacherSettings?[
+                                                      "instagram_url"] !=
+                                                  null)
+                                                SizedBox(
+                                                  width: 10.w,
+                                                ),
+                                              if (generalController
+                                                          .selectedTeacherForView
+                                                          .teacherSettings?[
+                                                      "twitter_url"] !=
+                                                  null)
+                                                GestureDetector(
+                                                  onTap: () async {
+                                                    String url = generalController
+                                                            .selectedTeacherForView
+                                                            .teacherSettings![
+                                                        "twitter_url"];
+                                                    if (url.isNotEmpty) {
+                                                      if (!url.startsWith(
+                                                          'http')) {
+                                                        url = 'https://$url';
+                                                      }
+                                                      await launchUrl(
+                                                          Uri.parse(url));
+                                                    }
+                                                  },
+                                                  child: Image.asset(
+                                                    "assets/icons/icon_Twitter_.png",
+                                                    color:
+                                                        AppColors.primaryColor,
+                                                  ),
+                                                ),
                                             ],
                                           )
                                         ]),
@@ -310,10 +379,9 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                       physics:
                                           const AlwaysScrollableScrollPhysics(),
                                       children: List.generate(
-                                          generalController
-                                              .selectedTeacherForView
-                                              .teacherCategories!
-                                              .length, (index1) {
+                                          generalController.selectedTeacherForView
+                                                  .teacherCategories?.length ??
+                                              0, (index1) {
                                         return Row(
                                           children: [
                                             Container(
@@ -390,8 +458,10 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                     child: Column(
                                       children: [
                                         RatingBar.builder(
-                                          initialRating: generalController
-                                              .selectedTeacherForView.rating!
+                                          initialRating: (generalController
+                                                      .selectedTeacherForView
+                                                      .rating ??
+                                                  0)
                                               .toDouble(),
                                           minRating: 1,
                                           itemSize: 15.h,
@@ -412,7 +482,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                         SizedBox(height: 10.h),
                                         Text(
                                           // '4.5',
-                                          "${LanguageConstant.rating.tr} (${generalController.selectedTeacherForView.rating!})",
+                                          "${LanguageConstant.rating.tr} (${generalController.selectedTeacherForView.rating ?? 0})",
                                           textAlign: TextAlign.start,
                                           style: AppTextStyles.bodyTextStyle6,
                                         ),

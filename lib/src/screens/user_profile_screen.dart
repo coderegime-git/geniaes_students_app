@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:resize/resize.dart';
 
 import '../../multi_language/language_constants.dart';
@@ -849,20 +850,30 @@ class UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Future<bool> requestPermission(ImageSource source) async {
-    PermissionStatus status;
+    if (Platform.isIOS) return true;
 
     if (source == ImageSource.camera) {
-      status = await Permission.camera.request();
+      final status = await Permission.camera.request();
+      return status.isGranted;
     } else {
-      status = await Permission.photos
-          .request(); // Android 13+ requires READ_MEDIA_IMAGES
+      if (Platform.isAndroid) {
+        // For Android 13 (API 33) and above
+        if (await _isAndroid13OrHigher()) {
+          final status = await Permission.photos.request();
+          return status.isGranted;
+        } else {
+          // For Android 12 and below
+          final status = await Permission.storage.request();
+          return status.isGranted;
+        }
+      }
     }
+    return true;
+  }
 
-    if (status.isGranted) {
-      return true;
-    } else if (status.isPermanentlyDenied) {
-      return false;
-    }
-    return false;
+  Future<bool> _isAndroid13OrHigher() async {
+    if (!Platform.isAndroid) return false;
+    final androidInfo = await DeviceInfoPlugin().androidInfo;
+    return androidInfo.version.sdkInt >= 33;
   }
 }

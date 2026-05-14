@@ -115,11 +115,15 @@ class _CallAppointmentScreenState extends State<CallAppointmentScreen> {
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
-        // selectedDate = formattedDate;
+        String userName =
+            Get.find<GeneralController>().selectedTeacherForView.userName ?? "";
         getMethod(
             context,
-            '$getTeacherBookAppointment${Get.find<GeneralController>().selectedTeacherForView.userName}/book_appointment',
-            {"appointment_type_id": appointmentTypeId, "date": selectedDate},
+            '$getTeacherBookAppointment$userName/book_appointment',
+            {
+              "appointment_type_id": appointmentTypeId,
+              "date": DateFormat('yyyy-MM-dd').format(selectedDate)
+            },
             false,
             getTeacherBookAppointmentRepo);
       });
@@ -131,13 +135,17 @@ class _CallAppointmentScreenState extends State<CallAppointmentScreen> {
     super.initState();
     // log("${Get.parameters['appointmentId']} PARAMETERS");
     log("$appointmentTypeId PARAMETERS2");
-    print(
-        "${Get.find<GeneralController>().selectedTeacherForView.userName} TeacherUsername1");
+    String userName =
+        Get.find<GeneralController>().selectedTeacherForView.userName ?? "";
+    log("$userName TeacherUsername1");
     getMethod(
         context,
-        '$getTeacherBookAppointment${Get.find<GeneralController>().selectedTeacherForView.userName}/book_appointment',
-        {"appointment_type_id": appointmentTypeId, "date": selectedDate},
-        false,
+        '$getTeacherBookAppointment$userName/book_appointment',
+        {
+          "appointment_type_id": appointmentTypeId,
+          "date": DateFormat('yyyy-MM-dd').format(selectedDate)
+        },
+        true,
         getTeacherBookAppointmentRepo);
     // Get All Payment Gateways
     getMethod(
@@ -155,7 +163,7 @@ class _CallAppointmentScreenState extends State<CallAppointmentScreen> {
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: AppBarWidget(
-            titleText: screenTitle!,
+            titleText: screenTitle ?? "",
             leadingIcon: "assets/icons/Expand_left.png",
             leadingOnTap: () {
               if (indexPage > 0) {
@@ -173,7 +181,7 @@ class _CallAppointmentScreenState extends State<CallAppointmentScreen> {
           child: teacherBookAppointmentController
                   .getTeacherBookAppointmentLoader
               ? teacherBookAppointmentController
-                          .getTeacherAppointmentScheduleModel.data!.schedule !=
+                          .getTeacherAppointmentScheduleModel.data?.schedule !=
                       null
                   ? Column(
                       children: [
@@ -228,11 +236,12 @@ class _CallAppointmentScreenState extends State<CallAppointmentScreen> {
                                         Get.find<
                                                 TeacherAppointmentScheduleController>()
                                             .getTeacherAppointmentScheduleModel
-                                            .data!
-                                            .schedule!
-                                            .appointmentType!
-                                            .displayName
-                                            .toString(),
+                                            .data
+                                            ?.schedule
+                                            ?.appointmentType
+                                            ?.displayName
+                                            .toString() ??
+                                        "",
                                         textAlign: TextAlign.start,
                                         style: AppTextStyles.bodyTextStyle9,
                                       ),
@@ -247,9 +256,10 @@ class _CallAppointmentScreenState extends State<CallAppointmentScreen> {
                                     children: [
                                       RatingBar.builder(
                                         initialRating:
-                                            Get.find<GeneralController>()
-                                                .selectedTeacherForView
-                                                .rating!
+                                            (Get.find<GeneralController>()
+                                                        .selectedTeacherForView
+                                                        .rating ??
+                                                    0)
                                                 .toDouble(),
                                         minRating: 1,
                                         itemSize: 15.h,
@@ -268,7 +278,7 @@ class _CallAppointmentScreenState extends State<CallAppointmentScreen> {
                                       SizedBox(width: 2.w),
                                       Text(
                                         // '4.5',
-                                        "(${Get.find<GeneralController>().selectedTeacherForView.rating!})",
+                                        "(${Get.find<GeneralController>().selectedTeacherForView.rating ?? 0})",
                                         textAlign: TextAlign.start,
                                         style: AppTextStyles.bodyTextStyle6,
                                       ),
@@ -285,13 +295,15 @@ class _CallAppointmentScreenState extends State<CallAppointmentScreen> {
                                       SizedBox(height: 4.h),
                                       Text(
                                         Get.find<GetAllSettingsController>()
-                                            .getDisplayAmount(int.parse(Get.find<
+                                            .getDisplayAmount(int.tryParse(Get.find<
                                                     TeacherAppointmentScheduleController>()
                                                 .getTeacherAppointmentScheduleModel
-                                                .data!
-                                                .schedule!
-                                                .fee!
-                                                .toString())),
+                                                .data
+                                                ?.schedule
+                                                ?.fee
+                                                ?.toString() ??
+                                            "0") ??
+                                        0),
                                         style: AppTextStyles.bodyTextStyle11,
                                       ),
                                     ],
@@ -555,27 +567,26 @@ class _CallAppointmentScreenState extends State<CallAppointmentScreen> {
 
                         items: Get.find<PaymentGatewaysController>()
                             .getPaymentGatewaysModel
-                            .data!
-                            .map((gatewaysName) {
+                            .data
+                            ?.map((gatewaysName) {
                           return DropdownMenuItem(
                             value: gatewaysName.code,
-                            child: DropdownMenuItem(
-                              child: Row(
-                                children: [
+                            child: Row(
+                              children: [
+                                if (gatewaysName.image != null)
                                   Image.network(
                                     "$mediaUrl${gatewaysName.image!}",
                                     height: 35.h,
                                   ),
-                                  SizedBox(
-                                    width: 8.w,
-                                  ),
-                                  Text(gatewaysName.name!,
-                                      style: AppTextStyles.bodyTextStyle11),
-                                ],
-                              ),
+                                SizedBox(
+                                  width: 8.w,
+                                ),
+                                Text(gatewaysName.name ?? "",
+                                    style: AppTextStyles.bodyTextStyle11),
+                              ],
                             ),
                           );
-                        }).toList(),
+                        }).toList() ?? [],
                         onChanged: (newValue) {
                           setState(() {
                             selectedPaymentGateway = newValue;
@@ -610,8 +621,8 @@ class _CallAppointmentScreenState extends State<CallAppointmentScreen> {
           SizedBox(height: 16.h),
           Get.find<GetAllSettingsController>()
                       .getAllSettingsModel
-                      .data!
-                      .enableWalletSystem ==
+                      .data
+                      ?.enableWalletSystem ==
                   "1"
               ? ButtonWidgetOne(
                   onTap: () async {
@@ -621,25 +632,26 @@ class _CallAppointmentScreenState extends State<CallAppointmentScreen> {
                         studentBookAppointment,
                         dio_instance.FormData.fromMap(<String, dynamic>{
                           "teacher_id": Get.find<GeneralController>()
-                              .selectedTeacherForView
-                              .id,
+                                  .selectedTeacherForView
+                                  .id ??
+                              0,
                           "question": Get.find<
                                           TeacherAppointmentScheduleController>()
                                       .getTeacherAppointmentScheduleModel
-                                      .data!
-                                      .schedule!
-                                      .appointmentType!
-                                      .displayName ==
+                                      .data
+                                      ?.schedule
+                                      ?.appointmentType
+                                      ?.displayName ==
                                   "Video Call"
                               ? Get.find<TeacherAppointmentScheduleController>()
                                   .videCallQuestionFieldController
                                   .text
                               : Get.find<TeacherAppointmentScheduleController>()
                                           .getTeacherAppointmentScheduleModel
-                                          .data!
-                                          .schedule!
-                                          .appointmentType!
-                                          .displayName ==
+                                          .data
+                                          ?.schedule
+                                          ?.appointmentType
+                                          ?.displayName ==
                                       "Audio Call"
                                   ? Get.find<
                                           TeacherAppointmentScheduleController>()
@@ -651,25 +663,27 @@ class _CallAppointmentScreenState extends State<CallAppointmentScreen> {
                                       .text,
                           "appointment_type_id":
                               Get.find<TeacherAppointmentScheduleController>()
-                                  .getTeacherAppointmentScheduleModel
-                                  .data!
-                                  .schedule!
-                                  .appointmentTypeId!
-                                  .toInt(),
+                                      .getTeacherAppointmentScheduleModel
+                                      .data
+                                      ?.schedule
+                                      ?.appointmentTypeId
+                                      ?.toInt() ??
+                                  0,
                           "date": selectedDate.toString(),
                           "appointment_schedule_id":
                               Get.find<TeacherAppointmentScheduleController>()
-                                  .getTeacherAppointmentScheduleModel
-                                  .data!
-                                  .schedule!
-                                  .id!
-                                  .toInt(),
+                                      .getTeacherAppointmentScheduleModel
+                                      .data
+                                      ?.schedule
+                                      ?.id
+                                      ?.toInt() ??
+                                  0,
                           "appointment_type":
                               Get.find<TeacherAppointmentScheduleController>()
                                   .getTeacherAppointmentScheduleModel
-                                  .data!
-                                  .schedule!
-                                  .type,
+                                  .data
+                                  ?.schedule
+                                  ?.type,
                           "attachment": file ?? "",
                           "gateway": "wallet",
                         }),
@@ -690,25 +704,26 @@ class _CallAppointmentScreenState extends State<CallAppointmentScreen> {
                     studentBookAppointment,
                     dio_instance.FormData.fromMap(<String, dynamic>{
                       "teacher_id": Get.find<GeneralController>()
-                          .selectedTeacherForView
-                          .id,
+                              .selectedTeacherForView
+                              .id ??
+                          0,
                       "question": Get.find<
                                       TeacherAppointmentScheduleController>()
                                   .getTeacherAppointmentScheduleModel
-                                  .data!
-                                  .schedule!
-                                  .appointmentType!
-                                  .displayName ==
+                                  .data
+                                  ?.schedule
+                                  ?.appointmentType
+                                  ?.displayName ==
                               "Video Call"
                           ? Get.find<TeacherAppointmentScheduleController>()
                               .videCallQuestionFieldController
                               .text
                           : Get.find<TeacherAppointmentScheduleController>()
                                       .getTeacherAppointmentScheduleModel
-                                      .data!
-                                      .schedule!
-                                      .appointmentType!
-                                      .displayName ==
+                                      .data
+                                      ?.schedule
+                                      ?.appointmentType
+                                      ?.displayName ==
                                   "Audio Call"
                               ? Get.find<TeacherAppointmentScheduleController>()
                                   .audioCallQuestionFieldController
@@ -718,25 +733,27 @@ class _CallAppointmentScreenState extends State<CallAppointmentScreen> {
                                   .text,
                       "appointment_type_id":
                           Get.find<TeacherAppointmentScheduleController>()
-                              .getTeacherAppointmentScheduleModel
-                              .data!
-                              .schedule!
-                              .appointmentTypeId!
-                              .toInt(),
+                                  .getTeacherAppointmentScheduleModel
+                                  .data
+                                  ?.schedule
+                                  ?.appointmentTypeId
+                                  ?.toInt() ??
+                              0,
                       "date": selectedDate.toString(),
                       "appointment_schedule_id":
                           Get.find<TeacherAppointmentScheduleController>()
-                              .getTeacherAppointmentScheduleModel
-                              .data!
-                              .schedule!
-                              .id!
-                              .toInt(),
+                                  .getTeacherAppointmentScheduleModel
+                                  .data
+                                  ?.schedule
+                                  ?.id
+                                  ?.toInt() ??
+                              0,
                       "appointment_type":
                           Get.find<TeacherAppointmentScheduleController>()
                               .getTeacherAppointmentScheduleModel
-                              .data!
-                              .schedule!
-                              .type,
+                              .data
+                              ?.schedule
+                              ?.type,
                       "attachment": file ?? "",
                       "gateway": selectedPaymentGateway,
                     }),
@@ -867,7 +884,7 @@ class _CallAppointmentScreenState extends State<CallAppointmentScreen> {
                                       horizontal: -1, vertical: -1),
                                   // label: const Text('08:00 - 08:30'),
                                   label: Text(
-                                      '${Get.find<TeacherAppointmentScheduleController>().getTeacherAppointmentScheduleModel.data!.schedule!.scheduleSlots![index].startTime} - ${Get.find<TeacherAppointmentScheduleController>().getTeacherAppointmentScheduleModel.data!.schedule!.scheduleSlots![index].endTime}'),
+                                      '${Get.find<TeacherAppointmentScheduleController>().getTeacherAppointmentScheduleModel.data?.schedule?.scheduleSlots?[index].startTime ?? ""} - ${Get.find<TeacherAppointmentScheduleController>().getTeacherAppointmentScheduleModel.data?.schedule?.scheduleSlots?[index].endTime ?? ""}'),
                                   labelStyle: value == index
                                       ? AppTextStyles.chipsTextStyle2
                                       : AppTextStyles.chipsTextStyle1,
@@ -882,16 +899,17 @@ class _CallAppointmentScreenState extends State<CallAppointmentScreen> {
                                   onSelected: (bool selected) {
                                     setState(() {
                                       value = selected ? index : null;
-                                      selectedSlot =
-                                          "${Get.find<TeacherAppointmentScheduleController>().getTeacherAppointmentScheduleModel.data!.schedule!.scheduleSlots!.elementAt(value!).startTime} - ${Get.find<TeacherAppointmentScheduleController>().getTeacherAppointmentScheduleModel.data!.schedule!.scheduleSlots!.elementAt(value!).endTime}";
+                                      selectedSlot = value != null
+                                          ? "${Get.find<TeacherAppointmentScheduleController>().getTeacherAppointmentScheduleModel.data?.schedule?.scheduleSlots?.elementAt(value!).startTime ?? ""} - ${Get.find<TeacherAppointmentScheduleController>().getTeacherAppointmentScheduleModel.data?.schedule?.scheduleSlots?.elementAt(value!).endTime ?? ""}"
+                                          : "";
                                       print("$selectedSlot SELECTEDSLOT");
                                       print("$selectedDate SELECTEDDATE");
                                       scheduleSlotId = Get.find<
                                               TeacherAppointmentScheduleController>()
                                           .getTeacherAppointmentScheduleModel
-                                          .data!
-                                          .schedule!
-                                          .scheduleSlots![index]
+                                          .data
+                                          ?.schedule
+                                          ?.scheduleSlots?[index]
                                           .id;
                                       print("${scheduleSlotId} ScheduleID");
                                     });
@@ -995,17 +1013,17 @@ class _CallAppointmentScreenState extends State<CallAppointmentScreen> {
               maxLines: 5,
               controller: Get.find<TeacherAppointmentScheduleController>()
                           .getTeacherAppointmentScheduleModel
-                          .data!
-                          .schedule!
-                          .appointmentTypeId! ==
+                          .data
+                          ?.schedule
+                          ?.appointmentTypeId ==
                       1
                   ? Get.find<TeacherAppointmentScheduleController>()
                       .videCallQuestionFieldController
                   : Get.find<TeacherAppointmentScheduleController>()
                               .getTeacherAppointmentScheduleModel
-                              .data!
-                              .schedule!
-                              .appointmentTypeId! ==
+                              .data
+                              ?.schedule
+                              ?.appointmentTypeId ==
                           2
                       ? Get.find<TeacherAppointmentScheduleController>()
                           .audioCallQuestionFieldController

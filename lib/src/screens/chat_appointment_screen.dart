@@ -78,13 +78,17 @@ class _ChatAppointmentScreenState extends State<ChatAppointmentScreen> {
     super.initState();
     // log("${Get.parameters['appointmentId']} PARAMETERS");
     log("$appointmentTypeId PARAMETERS2");
-    print(
-        "${Get.find<GeneralController>().selectedTeacherForView.userName} TeacherUsername1");
+    String userName =
+        Get.find<GeneralController>().selectedTeacherForView.userName ?? "";
+    log("$userName TeacherUsername1");
     getMethod(
         context,
-        '$getTeacherBookAppointment${Get.find<GeneralController>().selectedTeacherForView.userName}/book_appointment',
-        {"appointment_type_id": appointmentTypeId, "date": selectedDate},
-        false,
+        '$getTeacherBookAppointment$userName/book_appointment',
+        {
+          "appointment_type_id": appointmentTypeId,
+          "date": DateFormat('yyyy-MM-dd').format(selectedDate)
+        },
+        true,
         getTeacherBookAppointmentRepo);
     // Get All Payment Gateways
     getMethod(
@@ -101,7 +105,7 @@ class _ChatAppointmentScreenState extends State<ChatAppointmentScreen> {
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: AppBarWidget(
-            titleText: screenTitle!,
+            titleText: screenTitle ?? "",
             leadingIcon: "assets/icons/Expand_left.png",
             leadingOnTap: () {
               if (indexPage > 0) {
@@ -149,8 +153,7 @@ class _ChatAppointmentScreenState extends State<ChatAppointmentScreen> {
                           // "Jhon Doe",
                           Get.find<GeneralController>()
                               .selectedTeacherForView
-                              .name
-                              .toString(),
+                              .name ?? "",
                           textAlign: TextAlign.start,
                           style: AppTextStyles.bodyTextStyle14,
                         ),
@@ -164,14 +167,15 @@ class _ChatAppointmentScreenState extends State<ChatAppointmentScreen> {
                               style: AppTextStyles.bodyTextStyle13,
                             ),
                             SizedBox(height: 4.h),
-                            Text(
-                              Get.find<TeacherAppointmentScheduleController>()
-                                  .getTeacherAppointmentScheduleModel
-                                  .data!
-                                  .schedule!
-                                  .appointmentType!
-                                  .displayName
-                                  .toString(),
+                             Text(
+                               Get.find<TeacherAppointmentScheduleController>()
+                                       .getTeacherAppointmentScheduleModel
+                                       .data
+                                       ?.schedule
+                                       ?.appointmentType
+                                       ?.displayName
+                                       .toString() ??
+                                   "",
                               textAlign: TextAlign.start,
                               style: AppTextStyles.bodyTextStyle9,
                             ),
@@ -185,9 +189,10 @@ class _ChatAppointmentScreenState extends State<ChatAppointmentScreen> {
                         Row(
                           children: [
                             RatingBar.builder(
-                              initialRating: Get.find<GeneralController>()
-                                  .selectedTeacherForView
-                                  .rating!
+                              initialRating: (Get.find<GeneralController>()
+                                          .selectedTeacherForView
+                                          .rating ??
+                                      0)
                                   .toDouble(),
                               minRating: 1,
                               itemSize: 15.h,
@@ -206,7 +211,7 @@ class _ChatAppointmentScreenState extends State<ChatAppointmentScreen> {
                             SizedBox(width: 2.w),
                             Text(
                               // '4.5',
-                              "(${Get.find<GeneralController>().selectedTeacherForView.rating!})",
+                              "(${Get.find<GeneralController>().selectedTeacherForView.rating ?? 0})",
                               textAlign: TextAlign.start,
                               style: AppTextStyles.bodyTextStyle6,
                             ),
@@ -222,14 +227,16 @@ class _ChatAppointmentScreenState extends State<ChatAppointmentScreen> {
                             ),
                             SizedBox(height: 4.h),
                             Text(
-                              Get.find<GetAllSettingsController>()
-                                  .getDisplayAmount(int.parse(Get.find<
-                                          TeacherAppointmentScheduleController>()
-                                      .getTeacherAppointmentScheduleModel
-                                      .data!
-                                      .schedule!
-                                      .fee!
-                                      .toString())),
+                              Get.find<GetAllSettingsController>().getDisplayAmount(
+                                  int.tryParse(Get.find<
+                                                  TeacherAppointmentScheduleController>()
+                                              .getTeacherAppointmentScheduleModel
+                                              .data
+                                              ?.schedule
+                                              ?.fee
+                                              ?.toString() ??
+                                          "0") ??
+                                      0),
                               style: AppTextStyles.bodyTextStyle11,
                             ),
                           ],
@@ -467,27 +474,26 @@ class _ChatAppointmentScreenState extends State<ChatAppointmentScreen> {
 
                         items: Get.find<PaymentGatewaysController>()
                             .getPaymentGatewaysModel
-                            .data!
-                            .map((gatewaysName) {
+                            .data
+                            ?.map((gatewaysName) {
                           return DropdownMenuItem(
                             value: gatewaysName.code,
-                            child: DropdownMenuItem(
-                              child: Row(
-                                children: [
+                            child: Row(
+                              children: [
+                                if (gatewaysName.image != null)
                                   Image.network(
                                     "$mediaUrl${gatewaysName.image!}",
                                     height: 35.h,
                                   ),
-                                  SizedBox(
-                                    width: 8.w,
-                                  ),
-                                  Text(gatewaysName.name!,
-                                      style: AppTextStyles.bodyTextStyle11),
-                                ],
-                              ),
+                                SizedBox(
+                                  width: 8.w,
+                                ),
+                                Text(gatewaysName.name ?? "",
+                                    style: AppTextStyles.bodyTextStyle11),
+                              ],
                             ),
                           );
-                        }).toList(),
+                        }).toList() ?? [],
                         onChanged: (newValue) {
                           setState(() {
                             selectedPaymentGateway = newValue;
@@ -522,8 +528,8 @@ class _ChatAppointmentScreenState extends State<ChatAppointmentScreen> {
           SizedBox(height: 16.h),
           Get.find<GetAllSettingsController>()
                       .getAllSettingsModel
-                      .data!
-                      .enableWalletSystem ==
+                      .data
+                      ?.enableWalletSystem ==
                   "1"
               ? ButtonWidgetOne(
                   onTap: () async {
@@ -533,33 +539,36 @@ class _ChatAppointmentScreenState extends State<ChatAppointmentScreen> {
                         studentBookAppointment,
                         dio_instance.FormData.fromMap(<String, dynamic>{
                           "teacher_id": Get.find<GeneralController>()
-                              .selectedTeacherForView
-                              .id,
+                                  .selectedTeacherForView
+                                  .id ??
+                              0,
                           "question":
                               Get.find<TeacherAppointmentScheduleController>()
                                   .liveChatQuestionFieldController
                                   .text,
                           "appointment_type_id":
                               Get.find<TeacherAppointmentScheduleController>()
-                                  .getTeacherAppointmentScheduleModel
-                                  .data!
-                                  .schedule!
-                                  .appointmentTypeId!
-                                  .toInt(),
+                                      .getTeacherAppointmentScheduleModel
+                                      .data
+                                      ?.schedule
+                                      ?.appointmentTypeId
+                                      ?.toInt() ??
+                                  0,
                           "date": selectedDate.toString(),
                           "appointment_schedule_id":
                               Get.find<TeacherAppointmentScheduleController>()
-                                  .getTeacherAppointmentScheduleModel
-                                  .data!
-                                  .schedule!
-                                  .id!
-                                  .toInt(),
+                                      .getTeacherAppointmentScheduleModel
+                                      .data
+                                      ?.schedule
+                                      ?.id
+                                      ?.toInt() ??
+                                  0,
                           "appointment_type":
                               Get.find<TeacherAppointmentScheduleController>()
                                   .getTeacherAppointmentScheduleModel
-                                  .data!
-                                  .schedule!
-                                  .type,
+                                  .data
+                                  ?.schedule
+                                  ?.type,
                           "attachment": file ?? "",
                           "gateway": "wallet",
                         }),
@@ -580,33 +589,36 @@ class _ChatAppointmentScreenState extends State<ChatAppointmentScreen> {
                     studentBookAppointment,
                     dio_instance.FormData.fromMap(<String, dynamic>{
                       "teacher_id": Get.find<GeneralController>()
-                          .selectedTeacherForView
-                          .id,
+                              .selectedTeacherForView
+                              .id ??
+                          0,
                       "question":
                           Get.find<TeacherAppointmentScheduleController>()
                               .liveChatQuestionFieldController
                               .text,
                       "appointment_type_id":
                           Get.find<TeacherAppointmentScheduleController>()
-                              .getTeacherAppointmentScheduleModel
-                              .data!
-                              .schedule!
-                              .appointmentTypeId!
-                              .toInt(),
+                                  .getTeacherAppointmentScheduleModel
+                                  .data
+                                  ?.schedule
+                                  ?.appointmentTypeId
+                                  ?.toInt() ??
+                              0,
                       "date": selectedDate.toString(),
                       "appointment_schedule_id":
                           Get.find<TeacherAppointmentScheduleController>()
-                              .getTeacherAppointmentScheduleModel
-                              .data!
-                              .schedule!
-                              .id!
-                              .toInt(),
+                                  .getTeacherAppointmentScheduleModel
+                                  .data
+                                  ?.schedule
+                                  ?.id
+                                  ?.toInt() ??
+                              0,
                       "appointment_type":
                           Get.find<TeacherAppointmentScheduleController>()
                               .getTeacherAppointmentScheduleModel
-                              .data!
-                              .schedule!
-                              .type,
+                              .data
+                              ?.schedule
+                              ?.type,
                       "attachment": file ?? "",
                       "gateway": selectedPaymentGateway,
                     }),

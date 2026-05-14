@@ -102,6 +102,24 @@ postMethod(
           'message': 'Unexpected HTML response from server.',
         });
       } else {
+        if (errorData != null &&
+            errorData['message'] == "Your email address is not verified.") {
+          showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (BuildContext context) {
+                return CustomDialogBox(
+                  title: LanguageConstant.sorry.tr,
+                  titleColor: AppColors.customDialogErrorColor,
+                  descriptions: "Your email address is not verified.",
+                  text: LanguageConstant.ok.tr,
+                  functionCall: () {
+                    Navigator.pop(context);
+                  },
+                  img: 'assets/icons/dialog_error.png',
+                );
+              });
+        }
         executionMethod(context, false, errorData ?? {'message': e.message});
       }
     }
@@ -197,6 +215,24 @@ postMethodwithFile(
           'message': 'Unexpected HTML response from server.',
         });
       } else {
+        if (errorData != null &&
+            errorData['message'] == "Your email address is not verified.") {
+          showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (BuildContext context) {
+                return CustomDialogBox(
+                  title: LanguageConstant.sorry.tr,
+                  titleColor: AppColors.customDialogErrorColor,
+                  descriptions: "Your email address is not verified.",
+                  text: LanguageConstant.ok.tr,
+                  functionCall: () {
+                    Navigator.pop(context);
+                  },
+                  img: 'assets/icons/dialog_error.png',
+                );
+              });
+        }
         executionMethod(context, false, errorData ?? {'message': e.message});
       }
     }

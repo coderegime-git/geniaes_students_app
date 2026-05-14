@@ -31,8 +31,22 @@ makePaymentRepo(
         "${Get.find<MakePaymentController>().bookAppointmentModel.data!.fundTransaction}?user_id=${Get.find<GeneralController>().storageBox.read('mainUserId')} PAYMENTURL");
     Get.find<MakePaymentController>().update();
   } else if (!responseCheck) {
-    // Get.find<TeacherProfileController>().updateConsultantProfileLoader(false);
     Get.find<GeneralController>().updateFormLoaderController(false);
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return CustomDialogBox(
+            title: LanguageConstant.failed.tr,
+            titleColor: AppColors.customDialogErrorColor,
+            descriptions: response['message'] ?? LanguageConstant.pleaseTryAgain.tr,
+            text: LanguageConstant.ok.tr,
+            functionCall: () {
+              Navigator.pop(context);
+            },
+            img: 'assets/icons/dialog_error.png',
+          );
+        });
   }
 }
 
@@ -78,8 +92,22 @@ makePaymentViaWalletRepo(
 
     Get.find<MakePaymentController>().update();
   } else if (!responseCheck) {
-    // Get.find<TeacherProfileController>().updateConsultantProfileLoader(false);
     Get.find<GeneralController>().updateFormLoaderController(false);
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return CustomDialogBox(
+            title: LanguageConstant.failed.tr,
+            titleColor: AppColors.customDialogErrorColor,
+            descriptions: response['message'] ?? LanguageConstant.pleaseTryAgain.tr,
+            text: LanguageConstant.ok.tr,
+            functionCall: () {
+              Navigator.pop(context);
+            },
+            img: 'assets/icons/dialog_error.png',
+          );
+        });
   }
 }
 
@@ -88,17 +116,52 @@ makeServicePaymentRepo(
   if (responseCheck) {
     Get.find<MakePaymentController>().bookServiceModel =
         BookServiceModel.fromJson(response);
-    Get.to(WebViewScreen(
-      urlEndPoint:
-          "${Get.find<MakePaymentController>().bookServiceModel.data!.fundTransaction}?user_id=${Get.find<GeneralController>().storageBox.read('mainUserId')}",
-      fromScreen: "Service Screen",
-    ));
+    if (Get.find<MakePaymentController>().bookServiceModel.data?.fundTransaction !=
+        null) {
+      Get.to(WebViewScreen(
+        urlEndPoint:
+            "${Get.find<MakePaymentController>().bookServiceModel.data!.fundTransaction}?user_id=${Get.find<GeneralController>().storageBox.read('mainUserId')}",
+        fromScreen: "Service Screen",
+      ));
+    } else {
+      Get.find<GeneralController>().updateFormLoaderController(false);
+      showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return CustomDialogBox(
+              title: LanguageConstant.failed.tr,
+              titleColor: AppColors.customDialogErrorColor,
+              descriptions: "Payment initialization failed. Please try again.",
+              text: LanguageConstant.ok.tr,
+              functionCall: () {
+                Navigator.pop(context);
+              },
+              img: 'assets/icons/dialog_error.png',
+            );
+          });
+    }
+
     print(
-        "${Get.find<MakePaymentController>().bookServiceModel.data!.fundTransaction}?user_id=${Get.find<GeneralController>().storageBox.read('mainUserId')} PAYMENTURL");
+        "${Get.find<MakePaymentController>().bookServiceModel.data?.fundTransaction}?user_id=${Get.find<GeneralController>().storageBox.read('mainUserId')} PAYMENTURL");
     Get.find<MakePaymentController>().update();
   } else if (!responseCheck) {
-    // Get.find<LawyerProfileController>().updateConsultantProfileLoader(false);
     Get.find<GeneralController>().updateFormLoaderController(false);
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return CustomDialogBox(
+            title: LanguageConstant.failed.tr,
+            titleColor: AppColors.customDialogErrorColor,
+            descriptions: response['message'] ?? LanguageConstant.pleaseTryAgain.tr,
+            text: LanguageConstant.ok.tr,
+            functionCall: () {
+              Navigator.pop(context);
+            },
+            img: 'assets/icons/dialog_error.png',
+           );
+        });
   }
 }
 

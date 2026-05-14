@@ -63,7 +63,7 @@ editUserProfileDataRepo(
             return CustomDialogBox(
               title: LanguageConstant.failed.tr,
               titleColor: AppColors.customDialogErrorColor,
-              descriptions: LanguageConstant.pleaseTryAgain.tr,
+              descriptions: response['message'] ?? LanguageConstant.pleaseTryAgain.tr,
               text: LanguageConstant.ok.tr,
               functionCall: () {
                 Navigator.pop(context);
@@ -81,7 +81,7 @@ editUserProfileDataRepo(
           return CustomDialogBox(
             title: LanguageConstant.failed.tr,
             titleColor: AppColors.customDialogErrorColor,
-            descriptions: LanguageConstant.pleaseTryAgain.tr,
+            descriptions: response['message'] ?? LanguageConstant.pleaseTryAgain.tr,
             text: LanguageConstant.ok.tr,
             functionCall: () {
               Navigator.pop(context);
@@ -125,9 +125,12 @@ editUserProfileImageRepo(
     )
   });
   dio_instance.Dio dio = dio_instance.Dio();
+  setAcceptHeader(dio);
   setCustomHeader(dio, 'Authorization',
       'Bearer ${Get.find<GeneralController>().storageBox.read('authToken')}');
   setCustomHeader(dio, 'logged-in-as', 'student');
+  setLanguageHeader(dio, 'locale',
+      '${Get.find<GeneralController>().storageBox.read('languageCode')}');
 
   dio_instance.Response response;
   try {
@@ -198,6 +201,11 @@ editUserProfileImageRepo(
   } on dio_instance.DioError catch (e) {
     log("${e} Image Cath Response");
     Get.find<GeneralController>().updateFormLoaderController(false);
+    String errorMessage = LanguageConstant.pleaseTryAgain.tr;
+    if (e.response?.data != null && e.response?.data['message'] != null) {
+      errorMessage = e.response?.data['message'];
+    }
+
     showDialog(
         context: Get.context!,
         barrierDismissible: false,
@@ -205,7 +213,7 @@ editUserProfileImageRepo(
           return CustomDialogBox(
             title: LanguageConstant.failed.tr,
             titleColor: AppColors.customDialogErrorColor,
-            descriptions: LanguageConstant.pleaseTryAgain.tr,
+            descriptions: errorMessage,
             text: LanguageConstant.ok.tr,
             functionCall: () {
               Navigator.pop(context);
