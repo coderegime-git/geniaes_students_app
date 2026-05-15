@@ -41,12 +41,6 @@ class SplashScreenState extends State<SplashScreen>
   late AnimationController animationController;
   late Animation<double> animation;
   late AnimationController _controller;
-  final allTeacherslogic = Get.put(AllTeachersController());
-  final featuredTeacherslogic = Get.put(AllFeaturedTeachersController());
-  final topRatedTeacherslogic = Get.put(AllTopRatedTeachersController());
-  final allEventslogic = Get.put(AllEventsController());
-  final allServiceslogic = Get.put(AllServicesController());
-  final allAcademieslogic = Get.put(AllAcademiesController());
 
   startTime() async {
     final controller = Get.find<GetAllSettingsController>();
@@ -149,6 +143,7 @@ class SplashScreenState extends State<SplashScreen>
   @override
   dispose() {
     _controller.dispose();
+    animationController.dispose();
     super.dispose();
   }
 

@@ -25,7 +25,6 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  final logic = Get.put(AllTeachersController());
 
   @override
   void initState() {
@@ -68,20 +67,6 @@ class _SearchScreenState extends State<SearchScreen> {
                         setState(() {
                           generalController.isSearchOn = false;
                         });
-                        Get.find<SearchBarController>()
-                            .searchTextController
-                            .clear();
-                        postMethod(
-                            context,
-                            getAllTeachers,
-                            {
-                              'search': Get.find<SearchBarController>()
-                                  .searchTextController
-                                  .text
-                            },
-                            false,
-                            getAllSearchedTeachersRepo);
-
                         Get.back();
                       },
                     ),

@@ -46,6 +46,7 @@ signInWithEmailRepo(
       if (Get.find<SigninController>().signInUserModel.data!.user!.isStudent ==
           true) {
         Get.find<GeneralController>().updateFormLoaderController(false);
+        Get.find<PusherBeamsController>().initPusherBeams();
         print("Login As Student");
         Get.offAllNamed(PageRoutes.homeScreen);
       } else {

@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:pusher_beams/pusher_beams.dart';
 import '../api_services/urls.dart';
+import '../config/app_configs.dart';
 import '../models/pusher_payload_model.dart';
 import '../routes.dart';
 
@@ -18,6 +19,8 @@ import 'general_controller.dart';
 class PusherBeamsController extends GetxController {
   GetPusherBeamsPayloadModel getPusherBeamsPayloadModel =
       GetPusherBeamsPayloadModel();
+  bool _isPusherInitialized = false;
+  String? _currentPusherUserId;
 
   @override
   void onInit() {
@@ -32,22 +35,37 @@ class PusherBeamsController extends GetxController {
     log("PUSHER AUTH URL: ${apiBaseUrl}pusher/beams-auth");
     final BeamsAuthProvider provider = BeamsAuthProvider()
       ..authUrl = '${apiBaseUrl}pusher/beams-auth'
-      ..headers = {'Content-Type': 'application/json'}
+      ..headers = {
+        'Content-Type': 'application/json',
+        'Authorization':
+            'Bearer ${Get.find<GeneralController>().storageBox.read('authToken')}'
+      }
       ..queryParams = {
         'user_id':
             Get.find<GeneralController>().storageBox.read('userID').toString()
       }
-      ..credentials = 'omit';
+      ..credentials = 'include';
 
     try {
-      // if (Get.find<GeneralController>().storageBox.hasData('userID')) {
+      final storageUserId = Get.find<GeneralController>().storageBox.read('userID').toString();
+      
+      if (storageUserId == "null" || storageUserId.isEmpty) {
+        log("PusherBeams getSecure: No user ID in storage");
+        return;
+      }
+
+      if (_currentPusherUserId == storageUserId) {
+        log("PusherBeams user ID already set: $storageUserId");
+        return;
+      }
+
       await PusherBeams.instance.setDeviceInterests([
-        Get.find<GeneralController>().storageBox.read('userID').toString(),
+        storageUserId,
       ]);
-      // }
+
       if (Get.find<GeneralController>().storageBox.hasData('userID')) {
         await PusherBeams.instance.setUserId(
-          Get.find<GeneralController>().storageBox.read('userID').toString(),
+          storageUserId,
           provider,
           (error) => {
             if (error != null)
@@ -56,7 +74,8 @@ class PusherBeamsController extends GetxController {
               }
             else
               {
-                print("$error PUSHER2"),
+                print("PUSHER USER ID SET SUCCESS"),
+                _currentPusherUserId = storageUserId,
               },
 
             // Success! Do something...
@@ -70,13 +89,19 @@ class PusherBeamsController extends GetxController {
 
   initPusherBeams() async {
     if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return;
+    if (_isPusherInitialized) {
+      log("PUSHER ALREADY INITIALIZED");
+      await getSecure(); // Still try to getSecure in case user just logged in
+      return;
+    }
     log("INITIALIZE PUSHER");
     log("${Get.find<GeneralController>().storageBox.hasData('userID')} USERIDTRUE");
     log("${Get.find<GeneralController>().storageBox.read('userID')} USERIDREAD");
 
     try {
-      await PusherBeams.instance.start('9466bd1b-2413-4135-badc-36ae30931bac');
+      await PusherBeams.instance.start(AppConfigs.pusherBeamsInstanceId.toString());
       await PusherBeams.instance.addDeviceInterest("hello");
+      _isPusherInitialized = true;
     } catch (e) {
       log("PusherBeams start error: $e");
     }
@@ -89,7 +114,8 @@ class PusherBeamsController extends GetxController {
           .read('userID')
           .toString()
           .isNotEmpty) {
-        log(await "${PusherBeams.instance.getDeviceInterests()} DEVICEINTEREST");
+        final interests = await PusherBeams.instance.getDeviceInterests();
+        log("$interests DEVICEINTEREST");
       }
 
       // This is not intented to use in web
@@ -120,9 +146,18 @@ class PusherBeamsController extends GetxController {
   }
 
   void _onMessageReceivedInTheForeground(Map<Object?, Object?> data) {
+    log("PUSHER MESSAGE RECEIVED: $data");
     dynamic allData = data["data"];
+    if (allData == null || allData["payload"] == null) {
+      log("Pusher Beams Payload is null");
+      return;
+    }
     Map<String, dynamic> payload = jsonDecode(allData["payload"]);
     dynamic appointmentData = payload["appointment"];
+    if (appointmentData == null) {
+      log("Pusher Beams Appointment Data is null");
+      return;
+    }
 
     log("${jsonDecode(allData["payload"])} PAYLOAD");
     log("${appointmentData} APPOINTMENT");
@@ -188,11 +223,15 @@ class PusherBeamsController extends GetxController {
 
   clearAllStatePusherBeams() async {
     await PusherBeams.instance.clearAllState();
+    _isPusherInitialized = false;
+    _currentPusherUserId = null;
     log("Pusher Beams States are cleared");
   }
 
   clearDeviceInterests() async {
     await PusherBeams.instance.clearDeviceInterests();
+    _isPusherInitialized = false;
+    _currentPusherUserId = null;
     log("Pusher Beams Device Interests are cleared");
   }
 }

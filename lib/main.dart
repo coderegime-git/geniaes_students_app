@@ -7,14 +7,19 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:global_configuration/global_configuration.dart';
 import 'package:resize/resize.dart';
-import 'package:tutorhub_for_students/src/controllers/all_languages_controller.dart';
-
 import 'firebase_options.dart';
 import 'multi_language/languages.dart';
 import 'src/api_services/get_service.dart';
 import 'src/api_services/logic.dart';
 import 'src/api_services/urls.dart';
+import 'src/controllers/all_academies_controller.dart';
+import 'src/controllers/all_events_controller.dart';
+import 'src/controllers/all_featured_teachers_controller.dart';
+import 'src/controllers/all_languages_controller.dart';
+import 'src/controllers/all_services_controller.dart';
 import 'src/controllers/all_settings_controller.dart';
+import 'src/controllers/all_teachers_controller.dart';
+import 'src/controllers/all_top_rated_teachers_controller.dart';
 import 'src/controllers/general_controller.dart';
 import 'src/controllers/logged_in_user_controller.dart';
 import 'src/controllers/pusher_beams_controller.dart';
@@ -50,6 +55,13 @@ Future<void> main() async {
   Get.put(MainLogic());
   Get.put(AgoraLogic());
   Get.put(PusherBeamsController());
+
+  Get.put(AllTeachersController());
+  Get.put(AllFeaturedTeachersController());
+  Get.put(AllTopRatedTeachersController());
+  Get.put(AllEventsController());
+  Get.put(AllServicesController());
+  Get.put(AllAcademiesController());
 
   //-----load-configurations-from-local-json
   try {
@@ -107,6 +119,27 @@ class _MyAppState extends State<MyApp> {
     getMethod(context, getAllSettingUrl, null, true, getAllSettingsRepo);
     // Get All Languages
     getMethod(context, getAllLanguagesUrl, null, true, getAllLanguagesRepo);
+    requestNotificationPermission();
+  }
+
+  Future<void> requestNotificationPermission() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      log('User granted permission');
+    } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
+      log('User granted provisional permission');
+    } else {
+      log('User declined or has not accepted permission');
+    }
   }
 
   // This widget is the root of your application.

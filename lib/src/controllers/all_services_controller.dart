@@ -75,7 +75,7 @@ class AllServicesController extends GetxController {
   ///----app-bar-settings-----start
   ScrollController? scrollController;
   bool lastStatus = true;
-  double height = 100.h;
+  double height = 100.0;
 
   bool get isShrink {
     return scrollController!.hasClients &&

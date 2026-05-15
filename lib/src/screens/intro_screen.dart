@@ -31,11 +31,6 @@ class IntroScreen extends StatefulWidget {
 }
 
 class _IntroScreenState extends State<IntroScreen> {
-  final allTeacherslogic = Get.put(AllTeachersController());
-  final featuredTeacherslogic = Get.put(AllFeaturedTeachersController());
-  final topRatedTeacherslogic = Get.put(AllTopRatedTeachersController());
-  final allEventslogic = Get.put(AllEventsController());
-  final allAcademieslogic = Get.put(AllAcademiesController());
 
   @override
   void initState() {
@@ -88,23 +83,26 @@ class _IntroScreenState extends State<IntroScreen> {
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Get.find<GetAllSettingsController>()
-                            .getAllSettingsModel
-                            .data!
-                            .logo!
-                            .isEmpty
-                        ? Image.asset(
-                            "assets/icons/logo-text.png",
-                            width: 230.w,
-                          )
-                        : Image.network(
-                            "${AppConfigs.mediaUrl}${Get.find<GetAllSettingsController>().getAllSettingsModel.data!.logo}",
-                            width: 230.w,
-                            color: AppColors.white,
-                          ),
+                    Builder(builder: (_) {
+                      final logo = Get.find<GetAllSettingsController>()
+                          .getAllSettingsModel
+                          .data
+                          ?.logo;
+
+                      if (logo == null || logo.isEmpty) {
+                        return Image.asset(
+                          "assets/icons/logo-text.png",
+                          width: 230.w,
+                        );
+                      }
+                      return Image.network(
+                        "${AppConfigs.mediaUrl}$logo",
+                        width: 230.w,
+                        color: AppColors.white,
+                      );
+                    }),
                   ],
-                ),
-                AspectRatio(
+                ),                AspectRatio(
                   aspectRatio: 1,
                   child: IndicatorSliderWidget(),
                 ),

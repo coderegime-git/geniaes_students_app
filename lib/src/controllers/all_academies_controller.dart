@@ -6,6 +6,7 @@ import 'package:resize/resize.dart';
 import '../api_services/post_service.dart';
 import '../models/all_events_model.dart';
 import '../models/all_academies_model.dart';
+import '../repositories/all_academies_repo.dart';
 import '../repositories/all_events_repo.dart';
 import 'general_controller.dart';
 
@@ -55,7 +56,7 @@ class AllAcademiesController extends GetxController {
             'perPage': getAllAcademiesModel.data!.meta!.perPage
           },
           false,
-          getAllEventsRepo);
+          getAllAcademiesRepo);
       update();
     }
   }
@@ -68,7 +69,7 @@ class AllAcademiesController extends GetxController {
   ///----app-bar-settings-----start
   ScrollController? scrollController;
   bool lastStatus = true;
-  double height = 100.h;
+  double height = 100.0;
 
   bool get isShrink {
     return scrollController!.hasClients &&

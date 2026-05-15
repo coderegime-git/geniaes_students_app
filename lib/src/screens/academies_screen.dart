@@ -25,7 +25,6 @@ class AcademiesScreen extends StatefulWidget {
 }
 
 class _AcademiesScreenState extends State<AcademiesScreen> {
-  final logic = Get.put(AllAcademiesController());
 
   @override
   void initState() {
@@ -52,17 +51,6 @@ class _AcademiesScreenState extends State<AcademiesScreen> {
                 titleText: LanguageConstant.academies.tr,
                 leadingIcon: "assets/icons/Expand_left.png",
                 leadingOnTap: () {
-                  Get.find<SearchBarController>().searchTextController.clear();
-                  postMethod(
-                      context,
-                      getAllAcademies,
-                      {
-                        'search': Get.find<SearchBarController>()
-                            .searchTextController
-                            .text
-                      },
-                      false,
-                      getAllSearchedAcademiesRepo);
                   Get.back();
                 },
               ),
