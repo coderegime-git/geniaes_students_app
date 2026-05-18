@@ -60,7 +60,9 @@ signInWithEmailRepo(
             return CustomDialogBox(
               title: LanguageConstant.pleaseTryAgain.tr,
               titleColor: AppColors.customDialogErrorColor,
-              descriptions: '${response["message"]}',
+              descriptions: response["errors"] != null && response["errors"] is Map && response["errors"].isNotEmpty
+                  ? response["errors"].values.first[0].toString()
+                  : '${response["message"]}',
               text: LanguageConstant.ok.tr,
               functionCall: () {
                 Navigator.pop(context);
@@ -78,8 +80,9 @@ signInWithEmailRepo(
           return CustomDialogBox(
             title: LanguageConstant.pleaseTryAgain.tr,
             titleColor: AppColors.customDialogErrorColor,
-            descriptions:
-                '${Get.find<SigninController>().signInUserModel.message}',
+            descriptions: response["errors"] != null && response["errors"] is Map && response["errors"].isNotEmpty
+                ? response["errors"].values.first[0].toString()
+                : '${Get.find<SigninController>().signInUserModel.message}',
             text: LanguageConstant.ok.tr,
             functionCall: () {
               Navigator.pop(context);
@@ -138,7 +141,9 @@ socialSignInWithEmailRepo(
             return CustomDialogBox(
               title: LanguageConstant.pleaseTryAgain.tr,
               titleColor: AppColors.customDialogErrorColor,
-              descriptions: '${response["message"]}',
+              descriptions: response["errors"] != null && response["errors"] is Map && response["errors"].isNotEmpty
+                  ? response["errors"].values.first[0].toString()
+                  : '${response["message"]}',
               text: LanguageConstant.ok.tr,
               functionCall: () {
                 Navigator.pop(context);
@@ -155,7 +160,9 @@ socialSignInWithEmailRepo(
           return CustomDialogBox(
             title: LanguageConstant.pleaseTryAgain.tr,
             titleColor: AppColors.customDialogErrorColor,
-            descriptions: '${response["message"]}',
+            descriptions: response["errors"] != null && response["errors"] is Map && response["errors"].isNotEmpty
+                ? response["errors"].values.first[0].toString()
+                : '${response["message"]}',
             text: LanguageConstant.ok.tr,
             functionCall: () {
               Navigator.pop(context);
