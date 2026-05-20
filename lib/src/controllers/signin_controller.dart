@@ -61,6 +61,8 @@ class SigninController extends GetxController {
   /// Signin with Google
   Future<void> signInWithGoogle() async {
     try {
+      await GoogleSignIn().signOut();
+
       final GoogleSignInAccount? googleSignInAccount =
           await GoogleSignIn().signIn();
 
