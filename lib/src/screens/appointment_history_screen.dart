@@ -110,7 +110,12 @@ class _AppointmentHistoryScreenState extends State<AppointmentHistoryScreen> {
                             studentAppointmentHistoryController
                                     .studentAllAppointmentHistoryListForPagination
                                     .isNotEmpty
-                                ? ListView.builder(
+                                ? RefreshIndicator(
+                                    color: AppColors.primaryColor,
+                                    onRefresh: () async {
+                                      getMethod(context, "$getStudentAppointmentHistory?page=1", null, true, getAllStudentAppointmentHistoryRepo);
+                                    },
+                                    child: ListView.builder(
                                     scrollDirection: Axis.vertical,
                                     shrinkWrap: true,
                                     itemCount: studentAppointmentHistoryController
@@ -163,7 +168,9 @@ class _AppointmentHistoryScreenState extends State<AppointmentHistoryScreen> {
                                                           .studentAllAppointmentHistoryListForPagination[
                                                       index]);
                                           Get.toNamed(PageRoutes
-                                              .appointmentHistoryDetailScreen);
+                                              .appointmentHistoryDetailScreen)?.then((value) {
+                                            getMethod(context, "$getStudentAppointmentHistory?page=1", null, true, getAllStudentAppointmentHistoryRepo);
+                                          });
                                         },
                                         appointmentStatus: Container(
                                           padding: const EdgeInsets.fromLTRB(
@@ -211,7 +218,8 @@ class _AppointmentHistoryScreenState extends State<AppointmentHistoryScreen> {
                                             '${studentAppointmentHistoryController.studentAllAppointmentHistoryListForPagination[index].date!} \n${studentAppointmentHistoryController.studentAllAppointmentHistoryListForPagination[index].startTime ?? ""} - ${studentAppointmentHistoryController.studentAllAppointmentHistoryListForPagination[index].endTime ?? ""}',
                                       );
                                     },
-                                  )
+                                  ),
+                                )
                                 : Center(
                                     child: Text(
                                       LanguageConstant.noDataFound.tr,
@@ -257,7 +265,12 @@ class _AppointmentHistoryScreenState extends State<AppointmentHistoryScreen> {
             .where((i) => i.appointmentStatusCode == statusCode)
             .toList()
             .isNotEmpty
-        ? ListView.builder(
+        ? RefreshIndicator(
+            color: AppColors.primaryColor,
+            onRefresh: () async {
+              getMethod(context, "$getStudentAppointmentHistory?page=1", null, true, getAllStudentAppointmentHistoryRepo);
+            },
+            child: ListView.builder(
             scrollDirection: Axis.vertical,
             shrinkWrap: true,
             // ignore: iterable_contains_unrelated_type
@@ -354,11 +367,14 @@ class _AppointmentHistoryScreenState extends State<AppointmentHistoryScreen> {
                           .studentAllAppointmentHistoryListForPagination
                           .where((i) => i.appointmentStatusCode == statusCode)
                           .toList()[index]);
-                  Get.toNamed(PageRoutes.appointmentHistoryDetailScreen);
+                  Get.toNamed(PageRoutes.appointmentHistoryDetailScreen)?.then((value) {
+                    getMethod(context, "$getStudentAppointmentHistory?page=1", null, true, getAllStudentAppointmentHistoryRepo);
+                  });
                 },
               );
             },
-          )
+          ),
+        )
         : Center(
             child: Text(
               LanguageConstant.noDataFound.tr,
