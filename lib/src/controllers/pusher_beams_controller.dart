@@ -28,31 +28,42 @@ class PusherBeamsController extends GetxController {
   }
 
   getSecure() async {
-    final userId =
-        Get.find<GeneralController>().storageBox.read('userID').toString();
-    print("PUSHER USER ID: $userId");
-    log("PUSHER USER ID: $userId");
-    log("PUSHER AUTH URL: ${apiBaseUrl}pusher/beams-auth");
-    final BeamsAuthProvider provider = BeamsAuthProvider()
-      ..authUrl = '${apiBaseUrl}pusher/beams-auth'
-      ..headers = {
-        'Content-Type': 'application/json',
-        'Authorization':
-            'Bearer ${Get.find<GeneralController>().storageBox.read('authToken')}'
-      }
-      ..queryParams = {
-        'user_id':
-            Get.find<GeneralController>().storageBox.read('userID').toString()
-      }
-      ..credentials = 'include';
-
     try {
-      final storageUserId = Get.find<GeneralController>().storageBox.read('userID').toString();
-      
-      if (storageUserId == "null" || storageUserId.isEmpty) {
+      if (!Get.isRegistered<GeneralController>()) {
+        log("PusherBeams getSecure: GeneralController not registered yet.");
+        return;
+      }
+
+      final generalController = Get.find<GeneralController>();
+      final storageBox = generalController.storageBox;
+
+      final storageUserId = storageBox.read('userID')?.toString() ?? "";
+      final authToken = storageBox.read('authToken')?.toString() ?? "";
+
+      if (storageUserId.isEmpty || storageUserId == "null") {
         log("PusherBeams getSecure: No user ID in storage");
         return;
       }
+
+      if (authToken.isEmpty || authToken == "null") {
+        log("PusherBeams getSecure: No auth token in storage");
+        return;
+      }
+
+      print("PUSHER USER ID: $storageUserId");
+      log("PUSHER USER ID: $storageUserId");
+      log("PUSHER AUTH URL: ${apiBaseUrl}pusher/beams-auth");
+
+      final BeamsAuthProvider provider = BeamsAuthProvider()
+        ..authUrl = '${apiBaseUrl}pusher/beams-auth'
+        ..headers = {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $authToken'
+        }
+        ..queryParams = {
+          'user_id': storageUserId
+        }
+        ..credentials = 'include';
 
       if (_currentPusherUserId == storageUserId) {
         log("PusherBeams user ID already set: $storageUserId");
@@ -63,25 +74,18 @@ class PusherBeamsController extends GetxController {
         storageUserId,
       ]);
 
-      if (Get.find<GeneralController>().storageBox.hasData('userID')) {
-        await PusherBeams.instance.setUserId(
-          storageUserId,
-          provider,
-          (error) => {
-            if (error != null)
-              {
-                print("$error ERROR PUSHER"),
-              }
-            else
-              {
-                print("PUSHER USER ID SET SUCCESS"),
-                _currentPusherUserId = storageUserId,
-              },
-
-            // Success! Do something...
-          },
-        );
-      }
+      await PusherBeams.instance.setUserId(
+        storageUserId,
+        provider,
+        (error) {
+          if (error != null) {
+            print("$error ERROR PUSHER");
+          } else {
+            print("PUSHER USER ID SET SUCCESS");
+            _currentPusherUserId = storageUserId;
+          }
+        },
+      );
     } catch (e) {
       log("PusherBeams getSecure error: $e");
     }

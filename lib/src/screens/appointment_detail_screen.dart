@@ -18,6 +18,11 @@ import '../controllers/live_chat_controller.dart';
 import '../routes.dart';
 import '../widgets/appbar_widget.dart';
 import '../widgets/button_widget.dart';
+import 'dart:async';
+import '../repositories/student_appointment_history_repo.dart';
+import '../api_services/get_service.dart';
+import '../controllers/student_appointment_history_controller.dart';
+import '../models/student_appointment_history_model.dart';
 
 class AppointmentDetailScreen extends StatefulWidget {
   const AppointmentDetailScreen({super.key});
@@ -29,9 +34,77 @@ class AppointmentDetailScreen extends StatefulWidget {
 
 class AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
   final liveChatLogic = Get.put(LiveChatController());
+  Timer? _pollingTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startPolling();
+  }
+
+  void _startPolling() {
+    _pollingTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      final gc = Get.find<GeneralController>();
+      if (gc.selectedAppointmentHistoryForView.appointmentStatusCode != 5) {
+        getMethod(
+          context,
+          "$getStudentAppointmentHistory?page=1",
+          null,
+          true,
+          (context, responseCheck, response) {
+            if (responseCheck && mounted) {
+              getAllStudentAppointmentHistoryRepo(context, responseCheck, response);
+              
+              final historyController = Get.find<StudentAppointmentHistoryController>();
+              final updatedAppt = historyController.getStudentAppointmentHistoryModel.data?.data?.firstWhere(
+                (element) => element.id == gc.selectedAppointmentHistoryForView.id,
+                orElse: () => gc.selectedAppointmentHistoryForView,
+              );
+
+              if (updatedAppt != null && updatedAppt.id == gc.selectedAppointmentHistoryForView.id) {
+                gc.updateSelectedAppointmentHistoryForView(updatedAppt);
+                
+                if (updatedAppt.appointmentStatusCode == 5 && updatedAppt.isRating != 1) {
+                  _pollingTimer?.cancel();
+                  _showRateUsDialog(updatedAppt);
+                }
+              }
+            }
+          }
+        );
+      } else {
+        _pollingTimer?.cancel();
+      }
+    });
+  }
+
+  void _showRateUsDialog(StudentAppointmentHistoryModel appt) {
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (context) => RatingDialog(
+        onSubmit: (rating, comment) {
+          log("Rating: $rating, Comment: $comment");
+          Get.find<GeneralController>().updateAppointmentStatusLoaderController(true);
+          postMethod(
+            context,
+            addAppointmentRatingURL,
+            {
+              "booked_appointment_id": appt.id,
+              "comment": comment,
+              "rating": rating
+            },
+            true,
+            addAppointmentRatingRepo
+          );
+        },
+      )
+    );
+  }
+
   @override
   void dispose() {
-    // TODO: implement dispose
+    _pollingTimer?.cancel();
     super.dispose();
   }
 

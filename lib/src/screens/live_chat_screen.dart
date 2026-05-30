@@ -1,12 +1,17 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:crypto/crypto.dart';
+import 'package:dio/dio.dart' as dio_instance;
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 import 'package:resize/resize.dart';
+
+import 'in_app_attachment_viewer.dart';
 
 import '../api_services/get_service.dart';
 import '../api_services/post_service.dart';
@@ -155,6 +160,57 @@ class _LiveChatScreenState extends State<LiveChatScreen> {
     log("onMemberRemoved: $channelName user: $member");
   }
 
+  void _sendMessage() async {
+    final generalController = Get.find<GeneralController>();
+    final liveChatController = Get.find<LiveChatController>();
+
+    generalController.focusOut(context);
+
+    if (liveChatController.messageController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please type a message"),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    if (liveChatController.selectedFile != null) {
+      dio_instance.FormData formData = dio_instance.FormData.fromMap({
+        'appointment_id': generalController.selectedAppointmentHistoryForView.id,
+        'message': liveChatController.messageController.text,
+        'attachment_file': await dio_instance.MultipartFile.fromFile(
+          liveChatController.selectedFile!.path,
+          filename: liveChatController.selectedFile!.path.split('/').last,
+        ),
+      });
+      postMethodwithFile(
+          context,
+          sendMessageUrl,
+          formData,
+          true,
+          (context, success, data) {
+            sendMessagesRepo(context, success, data);
+            if (success) {
+              liveChatController.updateSelectedFile(null);
+            }
+          });
+    } else {
+      postMethod(
+          context,
+          sendMessageUrl,
+          {
+            'appointment_id': generalController.selectedAppointmentHistoryForView.id,
+            'attachment_file': null,
+            'message': liveChatController.messageController.text
+          },
+          true,
+          sendMessagesRepo);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final generalController = Get.find<GeneralController>();
@@ -232,10 +288,43 @@ class _LiveChatScreenState extends State<LiveChatScreen> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          "${liveChatController.messageList[index]?["message"] ?? ""}",
-                                          style: AppTextStyles.bodyTextStyle16,
-                                        ),
+                                        if (liveChatController.messageList[index]?["is_attachment"] == 1 || liveChatController.messageList[index]?["is_attachment"] == true || liveChatController.messageList[index]?["attachment_url"] != null)
+                                          GestureDetector(
+                                            onTap: () {
+                                              final urlStr = liveChatController.messageList[index]?["attachment_url"]?.toString() ?? "";
+                                              if (urlStr.isNotEmpty) {
+                                                final fullUrl = urlStr.startsWith('http') ? urlStr : "$mediaUrl$urlStr";
+                                                Get.to(() => InAppAttachmentViewer(url: fullUrl));
+                                              }
+                                            },
+                                            child: Container(
+                                              margin: EdgeInsets.only(bottom: 8.h),
+                                              padding: EdgeInsets.all(8.w),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(Icons.insert_drive_file, color: AppColors.primaryColor),
+                                                  SizedBox(width: 8.w),
+                                                  Flexible(
+                                                    child: Text(
+                                                      "View Attachment",
+                                                      style: TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.bold),
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        if (liveChatController.messageList[index]?["message"] != null && liveChatController.messageList[index]["message"].toString().isNotEmpty)
+                                          Text(
+                                            "${liveChatController.messageList[index]?["message"] ?? ""}",
+                                            style: AppTextStyles.bodyTextStyle16,
+                                          ),
                                         SizedBox(height: 6.h),
                                         Text(
                                           generalController.displayDateTime(
@@ -255,111 +344,117 @@ class _LiveChatScreenState extends State<LiveChatScreen> {
                 ),
                 Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(5.w, 0, 5.w, 10.h),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: TextFormField(
-                          style: TextStyle(
-                            fontFamily: AppFont.primaryFontFamily,
-                            fontSize: 14.sp,
-                            color: Colors.white,
+                      if (liveChatController.selectedFile != null)
+                        Container(
+                          padding: EdgeInsets.all(8.w),
+                          margin: EdgeInsets.only(bottom: 8.h),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          controller: liveChatController.messageController,
-                          onTap: () {
-                            Future.delayed(const Duration(seconds: 1)).whenComplete(
-                                () => liveChatController.chatScrollController
-                                    .animateTo(
-                                        liveChatController.chatScrollController
-                                            .position.maxScrollExtent,
-                                        curve: Curves.easeOut,
-                                        duration:
-                                            const Duration(milliseconds: 500)));
-                          },
-                          textInputAction: TextInputAction.send,
-                          keyboardType: TextInputType.multiline,
-                          maxLines: null,
-                          onChanged: (value) {
-                            // if (_chatLogic.messageController.text.isEmpty) {
-                            //   _chatLogic.updateShowSendIcon(false);
-                            // } else {
-                            //   _chatLogic.updateShowSendIcon(true);
-                            // }
-                          },
-                          onFieldSubmitted: (value) {
-                            // Get.find<GeneralController>()
-                            //     .notificationRouteApp = null;
-                            generalController.focusOut(context);
-                            postMethod(
-                                context,
-                                sendMessageUrl,
-                                {
-                                  'appointment_id': generalController
-                                      .selectedAppointmentHistoryForView.id,
-                                  'attachment_file': null,
-                                  'message':
-                                      liveChatController.messageController.text
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.insert_drive_file, color: AppColors.primaryColor),
+                              SizedBox(width: 8.w),
+                              Flexible(
+                                child: Text(
+                                  liveChatController.selectedFile!.path.split(Platform.pathSeparator).last,
+                                  style: TextStyle(color: Colors.black),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.close, color: Colors.red, size: 20),
+                                onPressed: () {
+                                  liveChatController.updateSelectedFile(null);
                                 },
-                                true,
-                                sendMessagesRepo);
-                          },
-                          // textDirection: generalController.isDirectionRTL(context) ? TextDirection.rtl : TextDirection.ltr,
-                          decoration: InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(
-                                vertical: 10.h, horizontal: 20.w),
-                            filled: true,
-                            fillColor: AppColors.primaryColor,
-                            hintText: 'Your Text Here.....',
-                            hintStyle: AppTextStyles.bodyTextStyle16,
-                            // hintStyle: state.textFieldTextStyle,
-                            enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(14.r),
-                                borderSide: const BorderSide(color: Colors.white)),
-                            focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(14.r),
-                                borderSide: const BorderSide(
-                                    color: AppColors.primaryColor)),
-                            errorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(14.r),
-                                borderSide: const BorderSide(color: Colors.red)),
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(14.r),
-                                borderSide: const BorderSide(color: Colors.white)),
+                                padding: EdgeInsets.zero,
+                                constraints: BoxConstraints(),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                      // _chatLogic.showSendIcon!
-                      //     ?
-                      Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(10.w, 0, 0, 0),
-                        child: InkWell(
-                          onTap: () {
-                            // Get.find<GeneralController>().notificationRouteApp = null;
-                            generalController.focusOut(context);
-                            postMethod(
-                                context,
-                                sendMessageUrl,
-                                {
-                                  'appointment_id': generalController
-                                      .selectedAppointmentHistoryForView.id,
-                                  'attachment_file': null,
-                                  'message':
-                                      liveChatController.messageController.text
-                                },
-                                true,
-                                sendMessagesRepo);
-                          },
-                          child: const CircleAvatar(
-                            radius: 20,
-                            backgroundColor: AppColors.primaryColor,
-                            child: Icon(
-                              Icons.send,
-                              color: Colors.white,
-                              size: 20,
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.attach_file, color: AppColors.primaryColor),
+                            onPressed: () async {
+                              FilePickerResult? result = await FilePicker.platform.pickFiles();
+                              if (result != null && result.files.single.path != null) {
+                                liveChatController.updateSelectedFile(File(result.files.single.path!));
+                              }
+                            },
+                          ),
+                          Expanded(
+                            child: TextFormField(
+                              style: TextStyle(
+                                fontFamily: AppFont.primaryFontFamily,
+                                fontSize: 14.sp,
+                                color: Colors.white,
+                              ),
+                              controller: liveChatController.messageController,
+                              onTap: () {
+                                Future.delayed(const Duration(seconds: 1)).whenComplete(
+                                    () => liveChatController.chatScrollController
+                                        .animateTo(
+                                            liveChatController.chatScrollController
+                                                .position.maxScrollExtent,
+                                            curve: Curves.easeOut,
+                                            duration:
+                                                const Duration(milliseconds: 500)));
+                              },
+                              textInputAction: TextInputAction.send,
+                              keyboardType: TextInputType.multiline,
+                              maxLines: null,
+                              onChanged: (value) {
+                              },
+                              onFieldSubmitted: (value) {
+                                _sendMessage();
+                              },
+                              decoration: InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                    vertical: 10.h, horizontal: 20.w),
+                                filled: true,
+                                fillColor: AppColors.primaryColor,
+                                hintText: 'Your Text Here.....',
+                                hintStyle: AppTextStyles.bodyTextStyle16,
+                                enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(14.r),
+                                    borderSide: const BorderSide(color: Colors.white)),
+                                focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(14.r),
+                                    borderSide: const BorderSide(
+                                        color: AppColors.primaryColor)),
+                                errorBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(14.r),
+                                    borderSide: const BorderSide(color: Colors.red)),
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(14.r),
+                                    borderSide: const BorderSide(color: Colors.white)),
+                              ),
                             ),
                           ),
-                        ),
-                      )
-                      // : const SizedBox()
+                          Padding(
+                            padding: EdgeInsetsDirectional.fromSTEB(10.w, 0, 0, 0),
+                            child: InkWell(
+                              onTap: _sendMessage,
+                              child: const CircleAvatar(
+                                radius: 20,
+                                backgroundColor: AppColors.primaryColor,
+                                child: Icon(
+                                  Icons.send,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
                     ],
                   ),
                 ),

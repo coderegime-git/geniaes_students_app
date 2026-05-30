@@ -108,10 +108,11 @@ socialSignInWithEmailRepo(
           'userID',
           Get.find<SigninController>()
               .signInUserModel
-              .data
-              ?.user
-              ?.loginInfo
-              ?.id);
+              .data!
+              .user!
+              .loginInfo!
+              .id);
+      log("${Get.find<GeneralController>().storageBox.read('userID')} Logged IN User UserID");
 
       Get.find<GeneralController>().storageBox.write('login_as', "student");
       Get.find<GeneralController>().storageBox.write('userData',

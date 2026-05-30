@@ -61,8 +61,17 @@ class _RatingDialogState extends State<RatingDialog> {
             SizedBox(height: 20.h),
             ElevatedButton(
               onPressed: () {
-                widget.onSubmit(_rating, _commentController.text);
-                Navigator.pop(context);
+                if (_rating == 0 || _commentController.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Please fill the required field"),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                } else {
+                  widget.onSubmit(_rating, _commentController.text);
+                  Navigator.pop(context);
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryColor,

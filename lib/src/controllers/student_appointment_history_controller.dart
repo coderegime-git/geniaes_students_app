@@ -80,6 +80,11 @@ class StudentAppointmentHistoryController extends GetxController {
     update();
   }
 
+  emptyStudentAppointmentHistoryList() {
+    studentAllAppointmentHistoryListForPagination.clear();
+    update();
+  }
+
   ///----app-bar-settings-----start
   ScrollController? scrollController;
   bool lastStatus = true;

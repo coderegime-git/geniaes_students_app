@@ -220,10 +220,22 @@ class _AppointmentHistoryScreenState extends State<AppointmentHistoryScreen> {
                                     },
                                   ),
                                 )
-                                : Center(
-                                    child: Text(
-                                      LanguageConstant.noDataFound.tr,
-                                      style: AppTextStyles.bodyTextStyle13,
+                                : RefreshIndicator(
+                                    color: AppColors.primaryColor,
+                                    onRefresh: () async {
+                                      getMethod(context, "$getStudentAppointmentHistory?page=1", null, true, getAllStudentAppointmentHistoryRepo);
+                                    },
+                                    child: ListView(
+                                      physics: const AlwaysScrollableScrollPhysics(),
+                                      children: [
+                                        SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+                                        Center(
+                                          child: Text(
+                                            LanguageConstant.noDataFound.tr,
+                                            style: AppTextStyles.bodyTextStyle13,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                             // Pending Appointment History
@@ -360,7 +372,7 @@ class _AppointmentHistoryScreenState extends State<AppointmentHistoryScreen> {
                   ),
                 ),
                 dateAndTime:
-                    '${studentAppointmentHistoryController.studentAllAppointmentHistoryListForPagination.where((i) => i.appointmentStatusCode == statusCode).toList()[index].date!}\n${studentAppointmentHistoryController.studentAllAppointmentHistoryListForPagination[index].startTime ?? ""} - ${studentAppointmentHistoryController.studentAllAppointmentHistoryListForPagination[index].endTime ?? ""}',
+                    '${studentAppointmentHistoryController.studentAllAppointmentHistoryListForPagination.where((i) => i.appointmentStatusCode == statusCode).toList()[index].date!}\n${studentAppointmentHistoryController.studentAllAppointmentHistoryListForPagination.where((i) => i.appointmentStatusCode == statusCode).toList()[index].startTime ?? ""} - ${studentAppointmentHistoryController.studentAllAppointmentHistoryListForPagination.where((i) => i.appointmentStatusCode == statusCode).toList()[index].endTime ?? ""}',
                 onTap: () {
                   generalController.updateSelectedAppointmentHistoryForView(
                       studentAppointmentHistoryController
@@ -375,10 +387,22 @@ class _AppointmentHistoryScreenState extends State<AppointmentHistoryScreen> {
             },
           ),
         )
-        : Center(
-            child: Text(
-              LanguageConstant.noDataFound.tr,
-              style: AppTextStyles.bodyTextStyle13,
+        : RefreshIndicator(
+            color: AppColors.primaryColor,
+            onRefresh: () async {
+              getMethod(context, "$getStudentAppointmentHistory?page=1", null, true, getAllStudentAppointmentHistoryRepo);
+            },
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+                Center(
+                  child: Text(
+                    LanguageConstant.noDataFound.tr,
+                    style: AppTextStyles.bodyTextStyle13,
+                  ),
+                ),
+              ],
             ),
           );
   }

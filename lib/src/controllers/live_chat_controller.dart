@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:resize/resize.dart';
@@ -78,4 +79,11 @@ class LiveChatController extends GetxController {
   String? userName;
   String? userEmail;
   String? userImage;
+
+  File? selectedFile;
+
+  void updateSelectedFile(File? file) {
+    selectedFile = file;
+    update();
+  }
 }

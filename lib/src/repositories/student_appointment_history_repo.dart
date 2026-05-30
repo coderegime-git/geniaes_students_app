@@ -15,6 +15,11 @@ getAllStudentAppointmentHistoryRepo(
 
     Get.find<StudentAppointmentHistoryController>()
         .updateStudentAppointmentHistoryLoader(true);
+        
+    if (Get.find<StudentAppointmentHistoryController>().getStudentAppointmentHistoryModel.data?.meta?.currentPage == 1) {
+      Get.find<StudentAppointmentHistoryController>().emptyStudentAppointmentHistoryList();
+    }
+
     log("${Get.find<StudentAppointmentHistoryController>().getStudentAppointmentHistoryModel.data!.data!.length.toString()} Total Student Appoinment History Length");
     log("${Get.find<StudentAppointmentHistoryController>().getStudentAppointmentHistoryModel.data!.data!.where((i) => i.appointmentStatusName == "Completed").toList().length.toString()} Total Completed Student Appoinment History Length");
 

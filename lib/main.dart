@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
@@ -119,10 +120,26 @@ class _MyAppState extends State<MyApp> {
     getMethod(context, getAllSettingUrl, null, true, getAllSettingsRepo);
     // Get All Languages
     getMethod(context, getAllLanguagesUrl, null, true, getAllLanguagesRepo);
-    requestNotificationPermission();
+    
+    // Delay requesting notification permission to ensure the Native Activity has fully resumed
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      requestNotificationPermission();
+    });
   }
 
   Future<void> requestNotificationPermission() async {
+    // 1. Request via permission_handler (especially for Android 13+)
+    try {
+      PermissionStatus status = await Permission.notification.status;
+      if (status.isDenied) {
+        status = await Permission.notification.request();
+        log('permission_handler notification request status: $status');
+      }
+    } catch (e) {
+      log('permission_handler notification request error: $e');
+    }
+
+    // 2. Request via FirebaseMessaging
     FirebaseMessaging messaging = FirebaseMessaging.instance;
     NotificationSettings settings = await messaging.requestPermission(
       alert: true,
